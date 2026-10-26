@@ -10,6 +10,7 @@ from tqdm import tqdm
 from torch.utils.data import DataLoader
 from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers import CSVLogger
+from pytorch_lightning.utilities.rank_zero import rank_zero_only
 
 from .data_utils import DeepSpatialDataset
 from .models import GiT
@@ -286,6 +287,7 @@ class DeepSpatial:
 
         self.module = DeepSpatialModule(self.train_config, self.model)
 
+    @rank_zero_only
     def _save_config(self, save_dir: str):
         """Internal helper to persist metadata and configurations."""
         os.makedirs(save_dir, exist_ok=True)

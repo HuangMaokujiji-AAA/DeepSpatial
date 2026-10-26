@@ -33,6 +33,6 @@
     "lambda_c": 10.0,
     "bidirectional_training": true
   },
-  "training": {"max_epochs": 100, "accelerator": "auto", "devices": "auto"},
+  "training": {"max_epochs": 100, "accelerator": "auto", "devices": 1},
   "reconstruction": {"thickness": 10, "steps": 100, "chunk_size": 512, "save_intermediates": true}
 }

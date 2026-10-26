@@ -6,6 +6,7 @@ from pathlib import Path
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 PROJECT = Path(__file__).resolve().parents[1]
 sys.dont_write_bytecode = True
@@ -19,6 +20,9 @@ import numpy as np
 import pandas as pd
 from scipy import sparse
 import torch
+from pytorch_lightning.utilities.rank_zero import rank_zero_only
+
+from examples.run_v1 import prepare_output
 
 from deepspatial import DeepSpatial
 from deepspatial.bio_prior import NicheFeaturizer, aggregate_neighbors, refine_program_expression
@@ -72,6 +76,21 @@ class CaptureVelocity(torch.nn.Module):
 
 class PipelineTests(unittest.TestCase):
     """覆盖新增计算路径以及关闭开关后的上游数值一致性。"""
+
+    def test_output_is_created_only_by_main_process(self):
+        """DDP 子进程不创建或覆盖输出，主进程仍拒绝复用旧目录。"""
+        with tempfile.TemporaryDirectory(dir=PROJECT) as temp:
+            output = Path(temp) / 'run'
+            with patch.object(rank_zero_only, 'rank', 1):
+                prepare_output(output, {'rank': 1})
+            self.assertFalse(output.exists())
+            with patch.object(rank_zero_only, 'rank', 0):
+                prepare_output(output, {'rank': 0})
+                with self.assertRaises(FileExistsError):
+                    prepare_output(output, {})
+            with patch.object(rank_zero_only, 'rank', 1):
+                prepare_output(output, {'rank': 1})
+            self.assertEqual(json.loads((output / 'run_config.json').read_text()), {'rank': 0})
 
     def test_neighbors_exclude_self_and_mark_missing(self):
         """自己的高表达不能进入自己的邻域，孤立细胞使用显式缺失标志。"""
