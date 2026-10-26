@@ -10,7 +10,7 @@
     "num_workers": 0,
     "n_samples_base": 50000,
     "alpha_spatial": 0.5,
-    "uot_reg": 0.8,
+    "uot_reg": 0.05,
     "uot_tau": 0.05,
     "balanced_fraction": 0.2,
     "source_sampling": "stratified",
