@@ -9,7 +9,8 @@ import sys
 
 PROJECT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT))
-if (PROJECT / '.runtime_deps').is_dir():
+if sys.platform == 'win32' and (PROJECT / '.runtime_deps').is_dir():
+    # 本机验证依赖不覆盖 Linux 服务器已经安装的包。
     sys.path.insert(1, str(PROJECT / '.runtime_deps'))
 
 import anndata as ad

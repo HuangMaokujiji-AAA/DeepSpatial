@@ -97,7 +97,43 @@ python tests/test_pipeline.py
 
 2026-10-26 验证记录：7 项回归检查通过；另用现有 MERFISH 的 155 基因小子集执行了示例入口的单轮训练、留出文件排除、模型保存和重建，结果可正常写入/读取 H5AD。该小规模检查的临时数据与模型已清理，未替代完整训练和独立效果评价。
 
-本机验证所缺的现有项目依赖安装在本目录 `.runtime_deps/`，未修改全局环境；测试和示例入口会自动使用它。项目的分发名称是 `deepspatial-hm`，导入名称仍是 `deepspatial`；需要安装时请使用单独环境，避免与上游分发覆盖同一导入名。
+本机验证所缺的现有项目依赖安装在本目录 `.runtime_deps/`，未修改全局环境；仅 Windows 测试和示例入口会使用它。Linux 服务器使用自己的 Conda 依赖，上传项目时无需上传该目录。项目的分发名称是 `deepspatial-hm`，导入名称仍是 `deepspatial`；需要安装时请使用单独环境，避免与上游分发覆盖同一导入名。
+
+## Linux 服务器的 CUDA 动态库路径
+
+如果在 `import torch` 阶段出现 `libcusparse.so.12: undefined symbol: __nvJitLinkComplete_12_4`，当前加载的 nvJitLink 未提供 cuSPARSE 所需符号。项目原有 Notebook 曾通过优先加载当前环境中的 nvJitLink 解决相同错误；终端进程也需要在 Python 启动前设置该路径。
+
+在项目根目录、已激活服务器 Conda 环境时运行：
+
+```bash
+# 查看 PyTorch 是否可以正常导入。
+bash HM_DeepSpital/scripts/run_python.sh -c 'import torch; print(torch.__version__, torch.version.cuda)'
+
+# 无参数默认执行测试。
+bash HM_DeepSpital/scripts/run_python.sh
+
+# 同一入口可启动训练。
+bash HM_DeepSpital/scripts/run_python.sh HM_DeepSpital/examples/run_v1.py \
+    --output HM_DeepSpital/outputs/v1_holdout_2 --holdout 2
+```
+
+脚本通过当前 Python 的 `sysconfig` 查找库目录，在启动 Python 前调整子进程的 `LD_LIBRARY_PATH`，不重装 PyTorch、不修改系统 CUDA。可用 `PYTHON=/path/to/env/bin/python bash ...` 指定解释器。
+
+也可在当前终端手动设置：
+
+```bash
+export LD_LIBRARY_PATH="$CONDA_PREFIX/lib/python3.10/site-packages/nvidia/nvjitlink/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+python HM_DeepSpital/tests/test_pipeline.py
+```
+
+上面的手动路径对应已报告的 Python 3.10 环境，通用启动脚本会自动适配 Python 版本。若依旧失败，先检查环境中的实际库文件与包版本：
+
+```bash
+python -m pip show torch nvidia-nvjitlink-cu12 nvidia-cusparse-cu12
+find "$CONDA_PREFIX" -name 'libnvJitLink.so*' -o -name 'libcusparse.so*'
+```
+
+路径优先级调整只能解决兼容库已存在但没有优先加载的情况；库缺失或本身版本不匹配时，需要根据检查结果处理依赖。此问题发生于测试启动前，切换测试到 CPU 也仍然需要先成功导入 PyTorch。
 
 ---
 

@@ -10,7 +10,8 @@ import unittest
 PROJECT = Path(__file__).resolve().parents[1]
 sys.dont_write_bytecode = True
 sys.path.insert(0, str(PROJECT))
-if (PROJECT / '.runtime_deps').is_dir():
+if sys.platform == 'win32' and (PROJECT / '.runtime_deps').is_dir():
+    # 本机验证依赖仅用于 Windows；服务器使用其自身 Conda 环境。
     sys.path.insert(1, str(PROJECT / '.runtime_deps'))
 
 import anndata as ad
