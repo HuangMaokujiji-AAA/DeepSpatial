@@ -6,6 +6,10 @@
 
 ## 直接运行
 
+推荐打开 `examples/run_v1.ipynb`，选择服务器原有 DeepSpatial Python 内核后运行全部单元格。Notebook 默认按顺序独立留出 1、2、3，每轮用其余四张切片重新训练，并沿用 `configs/merfish_v1.json` 中的全部参数。结果分别保存到 `outputs/v1_holdouts_1_2_3/holdout_1/`、`holdout_2/`、`holdout_3/`。每轮输出格式与原脚本一致；已有目录不会被覆盖，重跑时在配置单元格更换 `OUTPUT_ROOT`。Notebook 默认使用 GPU 0；切换 GPU 后应重启内核。
+
+原 Python 命令行入口继续可用：
+
 在包含上游运行依赖的环境中执行：
 
 ```powershell
