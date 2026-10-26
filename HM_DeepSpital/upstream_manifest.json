@@ -1,0 +1,23 @@
+{
+  "upstream_commit": "3c2187206d3664dbbc484e50f0325cc890a98e55",
+  "sha256": {
+    "deepspatial/__init__.py": "5aeb2e06f729dd78f4acc7da9ae2b3a7573ba83ade73905f129e346d31a66058",
+    "deepspatial/core.py": "b7839df06d7a98c26e87150e0d0694bd0f7f34865b9c57056dcef82b93bcf6ee",
+    "deepspatial/data_utils/__init__.py": "9d0b717271d2fc1cdd815bf6a17ef262ebb505d7949c3904d808fb7d2c3c1498",
+    "deepspatial/data_utils/dataset.py": "31a156f582ca163b43d2f27ad56bad9072f12035af9ff816b3c4fddcfc077eeb",
+    "deepspatial/data_utils/uot_solver.py": "e34818a64d8fcf5f244015e6bd1c7e4b728f4b907f87b3894d34ba0a881e4556",
+    "deepspatial/models/__init__.py": "6c54f601db331044f0556971f91fa7865a85d1de185013a4099a34cf6383b41a",
+    "deepspatial/models/commons.py": "e44aad9fa1b96aad6b547f4944b5c95f996e2ff04ef5a9bac56a051cfbfcbd85",
+    "deepspatial/models/git.py": "27a6ec5f78ccdeaae4d8453b32b9f37b7947c318ea1495aafd136626c942fbf8",
+    "deepspatial/module.py": "12779812d8a59f731d803235aa9f9ca7ff0d0ab30a47191016780611ec8e9531",
+    "deepspatial/transport/__init__.py": "a51ce36865a3badc78360e37b5f5070c6e1364ca1b0a68f32a6b6e69ea43b99d",
+    "deepspatial/transport/integrators.py": "95459c8d6e08805751abfd1c83330063fca836e8ebad1c8d4f72054c4b13ea86",
+    "deepspatial/transport/path.py": "b08eab02c16080a930c5113ea51e75b1c8d68ce4733afdd5550956469f110db8",
+    "deepspatial/transport/transport.py": "b3b1845cb31e803df8a39cc5ee35f0241db4637114500dcb01d58a935e7d5d99",
+    "deepspatial/transport/utils.py": "02db1fd92bce55c06d6d0e3c83e69f82aeda73e6f4962bb272d4d71bb76bbaef",
+    "deepspatial/vis_utils.py": "aba2000a202effad261e16f491568c8fe40ef4bd09a6bebf03c73dc15b19c923",
+    "LICENSE": "ef7b72b0463e605451452bc7589550a79790f411e0f3c5b24cd6f009f948993b",
+    "pyproject.toml": "9ac32f243d0713bcf2fff2549959a0d43a31786faaafe933010973838eed2dee",
+    "README.md": "70041bc4822946fbebfefab53be4bd48f8663ce635ca98f249abba7cf7ce1753"
+  }
+}
