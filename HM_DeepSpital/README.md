@@ -135,7 +135,17 @@ result = restored.reconstruct_full_volume(
 
 `source_sampling="stratified"` 保留原深度/方向抽样规则，按该方向的实测类型比例分配来源数量，再均衡同类 parent。它不强制每个薄层都有稀有类，也不增加稀有类的期望占比。`balanced_fraction` 只改变训练分布，推理仍使用实测来源比例。
 
-## V2 的可运行细化接口
+## V2 空间分支：先检验能否超过来源复制
+
+入口为 `examples/run_v2_spatial.ipynb` 或 `python HM_DeepSpital/examples/run_v2_spatial.py`。默认留出 1、2、3，读取已完成的 G zero；不重新训练、不计算隐藏切片条件，只替换生成 XY，冻结表达、类别、数量、来源及目标深度。物理半径、成本、UOT 参数继承原 G 配置。
+
+每折默认输出三个条件：`source_xy` 保留来源坐标但使用同一份 G zero 表达，作为位置对照；`ot_barycentric` 使用局部 UOT 条件重心作目标；`ot_sampled` 按条件 UOT 质量为每个来源抽取一个目标，同一来源的多个目标深度沿用同一路径。前向使用 t、反向使用 1−t 插值；没有正质量候选的来源保持原位置并标记 `source_anchor`。
+
+结果保存至新目录 `outputs/v2_spatial_holdouts_1_2_3/holdout_i/{source_xy,ot_barycentric,ot_sampled}/`，每组包含生成 H5AD、配置、预算与位移统计；shared 保存稀疏运输矩阵和匹配诊断。原 G zero 文件不改写，已有输出不覆盖。`spatial_before_v2` 保存原 G zero 坐标；`v1_generation_mode` 保存原推理方式；`v2_target_cell_index=-1` 表示使用重心/来源XY，或没有可采样目标，应结合 `match_status` 判断。
+
+这是空间运动机制的首轮候选，不预设已优于来源复制。评价应同时报告冻结 G zero 表达的 `source_xy`、原 G zero、直接来源复制及两个 OT 路径，并保留 ≤5% 稀有类、同类25/50/100µm覆盖、空间表达 PCC 与密度 TV。工程检查：`python -m unittest discover -s HM_DeepSpital/tests -p test_v2_spatial.py`。
+
+## 原 V2 表达细化接口
 
 ```python
 from deepspatial.bio_prior import refine_program_expression
