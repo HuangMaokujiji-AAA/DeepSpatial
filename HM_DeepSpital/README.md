@@ -25,6 +25,24 @@ python examples/run_v1.py --config configs/merfish_v1.json --output outputs/v1_h
 
 输出包含 `run_config.json`、`checkpoints/config.json`、`checkpoints/last.ckpt`、CSV 训练日志、`model/model.ckpt` 和 `generated.h5ad`。脚本不覆盖已有输出目录。配置里的输入路径以本项目目录为基准，输入数据只读。
 
+## 实验 S：复用三轮权重，只修改抽样
+
+打开 `examples/run_s.ipynb`，选择原 DeepSpatial 内核运行全部单元格。默认加载 `outputs/v1_holdouts_1_2_3/holdout_{1,2,3}/model/model.ckpt` 的已有 EMA 权重，不调用训练或重新计算 UOT。固定 10 µm 薄层中心为 0、10、20…，按薄层×类型×方向分配低方差整数预算；类型的两个方向联合舍入，保持原深度、方向和来源比例的联合期望。层内深度按原条件分布抽样，期望小于 1 时允许零计数。
+
+结果分别写入 `outputs/s_holdouts_1_2_3/holdout_i/`，包含 `generated.h5ad`、逐组期望/整数预算 `sampling_budget.csv`、实际来源/生成类别计数 `sampling_counts.csv`、100 个纯抽样种子的 `sampling_audit.csv`，以及记录原权重 SHA-256 的 `run_config.json`。完整来源调度保存在 H5AD 的 obs 中。已有结果不会被覆盖。
+
+服务器项目根目录也可直接运行：
+
+```bash
+CUDA_VISIBLE_DEVICES=0 python HM_DeepSpital/examples/run_s.py
+
+# 只检查抽样，不做 ODE；使用独立的新输出目录。
+python HM_DeepSpital/examples/run_s.py --audit-only \
+    --output-root HM_DeepSpital/outputs/s_sampling_audit
+```
+
+可用 `--holdouts 2` 只推理一轮、`--audit-seeds 0` 跳过重复抽样检查、`--output-root` 指定新的输出目录。原训练配置和推理分支 `random/stratified` 不变。工程检查：`python HM_DeepSpital/tests/test_experiment_s.py`。
+
 ## 核心开关
 
 ```python

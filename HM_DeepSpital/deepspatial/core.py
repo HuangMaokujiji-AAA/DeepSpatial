@@ -16,7 +16,7 @@ from .data_utils import DeepSpatialDataset
 from .models import GiT
 from .module import DeepSpatialModule
 from .bio_prior import NicheFeaturizer
-from .data_utils.sampling import stratified_source_indices
+from .data_utils.sampling import stratified_source_indices, depth_type_source_schedule
 
 
 class DeepSpatial:
@@ -430,7 +430,9 @@ class DeepSpatial:
                                    chunk_size: int = 2048,
                                    device: str = "auto",
                                    source_sampling: str = None,
-                                   save_intermediates: bool = False) -> ad.AnnData:
+                                   save_intermediates: bool = False,
+                                   depth_bin_width_um: float = 10.0,
+                                   depth_grid_origin_um: float = 0.0) -> ad.AnnData:
         """
         Generates a 3D volume segment between two specific AnnData slices.
 
@@ -441,6 +443,9 @@ class DeepSpatial:
             thickness: Physical distance (um) between generated cells, controlling density.
             chunk_size: Batch size for ODE integration to manage VRAM usage.
             device: Computing device ('auto', 'cuda', 'cpu', or specific 'cuda:n').
+            source_sampling: Existing mode or 'depth_type_stratified' for experiment S.
+            depth_bin_width_um: Experiment S bin width; does not change total density.
+            depth_grid_origin_um: Experiment S physical grid center at bin index zero.
 
         Returns:
             An AnnData object containing the interpolated 3D segment in physical coordinates.
@@ -449,8 +454,8 @@ class DeepSpatial:
             raise ValueError("Use positive thickness/chunk_size and at least two ODE output steps.")
         self._prepare_inference_slices([adata0, adata1])
         source_sampling = source_sampling or self.source_sampling
-        if source_sampling not in ('random', 'stratified'):
-            raise ValueError("source_sampling must be 'random' or 'stratified'.")
+        if source_sampling not in ('random', 'stratified', 'depth_type_stratified'):
+            raise ValueError("Use 'random', 'stratified' or 'depth_type_stratified' source sampling.")
         # Device management
         if device == "auto":
             dev = self.module.device if self.module.device.type != 'cpu' else \
@@ -475,6 +480,8 @@ class DeepSpatial:
             niche0=adata0.obsm.get('niche_cond') if self.niche_featurizer else None,
             niche1=adata1.obsm.get('niche_cond') if self.niche_featurizer else None,
             source_sampling=source_sampling, save_intermediates=save_intermediates,
+            depth_bounds_um=(float(adata0.obs[self.z_key].iloc[0]), float(adata1.obs[self.z_key].iloc[0])),
+            depth_bin_width_um=depth_bin_width_um, depth_grid_origin_um=depth_grid_origin_um,
         )
 
         # Assemble and restore to physical coordinates
@@ -489,7 +496,9 @@ class DeepSpatial:
                                 chunk_size: int = 2048,
                                 device: str = "auto",
                                 source_sampling: str = None,
-                                save_intermediates: bool = False) -> ad.AnnData:
+                                save_intermediates: bool = False,
+                                depth_bin_width_um: float = 10.0,
+                                depth_grid_origin_um: float = 0.0) -> ad.AnnData:
         """
         High-level API to reconstruct the entire 3D volume from a list of slices.
 
@@ -499,6 +508,9 @@ class DeepSpatial:
             steps: Number of ODE integration steps per gap.
             chunk_size: Processing batch size to prevent OOM on large datasets.
             device: Target device for the entire reconstruction process.
+            source_sampling: Existing mode or 'depth_type_stratified' for experiment S.
+            depth_bin_width_um: Experiment S bin width in physical coordinates.
+            depth_grid_origin_um: Experiment S physical grid center at bin index zero.
 
         Returns:
             A single merged AnnData object representing the continuous 3D volume.
@@ -532,6 +544,8 @@ class DeepSpatial:
                 device=device,
                 source_sampling=source_sampling,
                 save_intermediates=save_intermediates,
+                depth_bin_width_um=depth_bin_width_um,
+                depth_grid_origin_um=depth_grid_origin_um,
             )
             
             segment_list.append(segment)
@@ -542,6 +556,19 @@ class DeepSpatial:
         # Inherit metadata from the reference slice
         if hasattr(adata_list[0], 'uns'):
             full_volume.uns.update(adata_list[0].uns)
+
+        if source_sampling == 'depth_type_stratified' or (
+                source_sampling is None and self.source_sampling == 'depth_type_stratified'):
+            # ad.concat 的 uns_merge='first' 不会自动合并逐区间预算。
+            full_volume.uns['depth_type_sampling'] = {
+                'bin_width_um': float(depth_bin_width_um),
+                'grid_origin_um': float(depth_grid_origin_um),
+                'budget': pd.concat([s.uns['depth_type_sampling']['budget'] for s in segment_list], ignore_index=True),
+            }
+            full_volume.uns['hm_reconstruction'].update(
+                generated_cells=int(full_volume.n_obs),
+                unique_parents=int(full_volume.obs['parent_id'].nunique()),
+            )
         
         return full_volume
 
@@ -575,22 +602,34 @@ class DeepSpatial:
         return x0, z0, g0, c0, x1, z1, g1, c1, target_cells, total_cells
 
     def _generate_and_prune_optimized(self, x0, g0, c0, x1, g1, c1, z0, z1, steps, target_cells, total_cells, dev, chunk_size,
-                                     niche0=None, niche1=None, source_sampling='random', save_intermediates=False):
+                                     niche0=None, niche1=None, source_sampling='random', save_intermediates=False,
+                                     depth_bounds_um=None, depth_bin_width_um=10.0, depth_grid_origin_um=0.0):
         """保持原深度/方向分布，按开关抽取来源并分块积分、保留追溯结果。"""
         N0, N1 = float(x0.shape[0]), float(x1.shape[0])
-        u = torch.rand(total_cells, device=dev)
-        
-        # Inverse transform sampling for time distribution
-        if abs(N0 - N1) < 1e-5:
-            t_vals = u
+        schedule = None
+        if source_sampling == 'depth_type_stratified':
+            schedule = depth_type_source_schedule(
+                c0.cpu().numpy(), c1.cpu().numpy(), *depth_bounds_um, total_cells,
+                bin_width_um=depth_bin_width_um, grid_origin_um=depth_grid_origin_um,
+            )
+            # 双精度目标深度避免薄层边界经 float32 舍入后改变所属预算。
+            t_vals = torch.as_tensor(schedule['t'], device=dev)
+            is_fwd = torch.as_tensor(schedule['is_forward'], device=dev)
         else:
-            t_vals = (-N0 + torch.sqrt(N0**2 * (1 - u) + N1**2 * u)) / (N1 - N0)
-
+            # 保留已有分支的随机数消费顺序和数值路径。
+            u = torch.rand(total_cells, device=dev)
+            if abs(N0 - N1) < 1e-5:
+                t_vals = u
+            else:
+                t_vals = (-N0 + torch.sqrt(N0**2 * (1 - u) + N1**2 * u)) / (N1 - N0)
+            is_fwd = torch.rand(total_cells, device=dev) > t_vals
         target_zs = t_vals * (z1 - z0) + z0
-        is_fwd = torch.rand(total_cells, device=dev) > t_vals
         fwd_ids, bwd_ids = torch.where(is_fwd)[0], torch.where(~is_fwd)[0]
 
-        if source_sampling == 'stratified':
+        if schedule is not None:
+            parent_indices = torch.as_tensor(schedule['source_index'], device=dev)
+            src_fwd, src_bwd = parent_indices[fwd_ids], parent_indices[bwd_ids]
+        elif source_sampling == 'stratified':
             src_fwd = torch.as_tensor(stratified_source_indices(c0.cpu().numpy(), len(fwd_ids)), device=dev)
             src_bwd = torch.as_tensor(stratified_source_indices(c1.cpu().numpy(), len(bwd_ids)), device=dev)
         else:
@@ -635,7 +674,7 @@ class DeepSpatial:
                 chunk_t_vals = t_vals[chunk_child_ids] * (steps - 1)
                 idx_low = chunk_t_vals.long()
                 idx_high = torch.clamp(idx_low + 1, max=steps - 1)
-                w_high = (chunk_t_vals - idx_low.float()).unsqueeze(1)
+                w_high = (chunk_t_vals - idx_low.float()).unsqueeze(1).to(res['x_traj'].dtype)
 
                 final_x[chunk_child_ids] = (1 - w_high) * res['x_traj'][idx_low, local_parent_idx] + w_high * res['x_traj'][idx_high, local_parent_idx]
                 final_g[chunk_child_ids] = (1 - w_high) * res['g_traj'][idx_low, local_parent_idx] + w_high * res['g_traj'][idx_high, local_parent_idx]
@@ -683,6 +722,7 @@ class DeepSpatial:
             'continuous_c': continuous_c.cpu().numpy() if continuous_c is not None else None,
             'before_sparsification': before_sparsification.cpu().numpy() if before_sparsification is not None else None,
             'source_sampling': source_sampling,
+            'depth_schedule': schedule,
         }
 
     def _assemble_fast_anndata(self, adata0, adata1, mix_data):
@@ -724,6 +764,20 @@ class DeepSpatial:
             var=adata0.var.copy(), 
             obsm={self.spatial_key: mix_data['x']}
         )
+        schedule = mix_data.get('depth_schedule')
+        if schedule is not None:
+            result.obs['depth_bin_index'] = schedule['depth_bin_index']
+            result.obs['depth_bin_center_um'] = schedule['grid_origin_um'] + schedule['depth_bin_index'] * schedule['bin_width_um']
+            if 'z_norm' in result.obs:
+                result.obs['source_z_norm'] = result.obs['z_norm'].to_numpy(copy=True)
+            result.obs['z_norm'] = mix_data['zs']
+            budget = pd.DataFrame(schedule['budget'])
+            budget['source_cell_class'] = [str(self.categories[k]) for k in budget.source_class_code]
+            result.uns['depth_type_sampling'] = {
+                'bin_width_um': schedule['bin_width_um'],
+                'grid_origin_um': schedule['grid_origin_um'],
+                'budget': budget,
+            }
         if mix_data['before_sparsification'] is not None:
             result.layers['expression_before_sparsification'] = mix_data['before_sparsification']
             result.obsm['cell_class_continuous'] = mix_data['continuous_c']
