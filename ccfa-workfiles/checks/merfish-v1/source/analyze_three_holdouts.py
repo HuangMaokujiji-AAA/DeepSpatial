@@ -7,7 +7,7 @@ ROOT = Path(__file__).resolve().parents[4]
 RUN = ROOT / 'HM_DeepSpital/outputs/v1_holdouts_1_2_3'
 DEST = RUN / 'analysis'
 DEST.mkdir(exist_ok=True)
-os.environ['MPLCONFIGDIR'] = str(DEST / '.matplotlib')
+os.environ.setdefault('MPLCONFIGDIR', str(DEST / '.matplotlib'))
 
 import anndata as ad
 import numpy as np

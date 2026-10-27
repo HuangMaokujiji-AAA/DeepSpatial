@@ -16,7 +16,8 @@ from .data_utils import DeepSpatialDataset
 from .models import GiT
 from .module import DeepSpatialModule
 from .bio_prior import NicheFeaturizer
-from .data_utils.sampling import stratified_source_indices, depth_type_source_schedule
+from .data_utils.sampling import stratified_source_indices, depth_type_source_schedule, replay_source_schedule
+from .data_utils.local_matching import local_support, matching_parameters
 
 
 class DeepSpatial:
@@ -52,6 +53,7 @@ class DeepSpatial:
         self.gene_names = None
         self.niche_featurizer = None
         self.source_sampling = 'random'
+        self.local_matching_config = None
 
     def _normalize_spatial(self, adata_list: list[ad.AnnData]) -> None:
         """
@@ -110,7 +112,8 @@ class DeepSpatial:
                    mode: str = 'fit',
                    niche_config: dict = None,
                    balanced_fraction: float = 0.0,
-                   source_sampling: str = 'random'):
+                   source_sampling: str = 'random',
+                   local_matching_config: dict = None):
         """
         Prepares the data pipeline and calculates physical normalization statistics.
         
@@ -129,6 +132,7 @@ class DeepSpatial:
             niche_config: 邻域半径、程序权重等；None 保留无生态位条件基线。
             balanced_fraction: 有效同类 UOT 配对的混合抽样比例。
             source_sampling: 'random' 或保持来源期望比例的 'stratified'。
+            local_matching_config: 实验 G 物理候选半径和成本尺度；None 沿用原 UOT。
         """
         self.spatial_key = spatial_key
         self.z_key = z_key
@@ -140,6 +144,7 @@ class DeepSpatial:
         if source_sampling not in ('random', 'stratified'):
             raise ValueError("source_sampling must be 'random' or 'stratified'.")
         self.source_sampling = source_sampling
+        self.local_matching_config = local_matching_config
         self._validate_slices(adata_list, require_order=True)
         self.gene_names = adata_list[0].var_names.tolist()
         self.data_config = {'balanced_fraction': balanced_fraction, 'source_sampling': source_sampling}
@@ -163,6 +168,8 @@ class DeepSpatial:
             mode=mode,
             balanced_fraction=balanced_fraction,
             niche_key='niche_cond' if self.niche_featurizer is not None else None,
+            local_matching_config=local_matching_config,
+            physical_spatial_key=spatial_key, physical_z_key=z_key,
         )
         if not len(self.dataset):
             raise ValueError("No valid UOT trajectories were sampled; check data and sampling budget.")
@@ -305,6 +312,7 @@ class DeepSpatial:
             'gene_names': self.gene_names,
             'niche_featurizer': self.niche_featurizer.to_dict() if self.niche_featurizer else None,
             'trajectory_sampling': self.dataset.sampling_stats if self.dataset is not None else [],
+            'local_matching_config': self.local_matching_config,
         }
         with open(os.path.join(save_dir, 'config.json'), 'w', encoding='utf-8') as f:
             json.dump(config, f, ensure_ascii=False, indent=2)
@@ -338,6 +346,7 @@ class DeepSpatial:
             self.train_config = config.get('train_config', {})
             self.data_config = config.get('data_config', {})
             self.source_sampling = self.data_config.get('source_sampling', 'random')
+            self.local_matching_config = config.get('local_matching_config')
             self.gene_names = config.get('gene_names')
             niche_state = config.get('niche_featurizer')
             self.niche_featurizer = NicheFeaturizer.from_dict(niche_state) if niche_state else None
@@ -432,7 +441,8 @@ class DeepSpatial:
                                    source_sampling: str = None,
                                    save_intermediates: bool = False,
                                    depth_bin_width_um: float = 10.0,
-                                   depth_grid_origin_um: float = 0.0) -> ad.AnnData:
+                                   depth_grid_origin_um: float = 0.0,
+                                   sampling_reference: ad.AnnData = None) -> ad.AnnData:
         """
         Generates a 3D volume segment between two specific AnnData slices.
 
@@ -446,6 +456,7 @@ class DeepSpatial:
             source_sampling: Existing mode or 'depth_type_stratified' for experiment S.
             depth_bin_width_um: Experiment S bin width; does not change total density.
             depth_grid_origin_um: Experiment S physical grid center at bin index zero.
+            sampling_reference: Metadata-only AnnData for exact experiment S schedule replay.
 
         Returns:
             An AnnData object containing the interpolated 3D segment in physical coordinates.
@@ -472,6 +483,21 @@ class DeepSpatial:
         x0, z0, g0, c0, x1, z1, g1, c1, target_cells, total_cells = self._setup_and_extract(
             adata0, adata1, thickness, dev
         )
+        depth_bounds = (float(adata0.obs[self.z_key].iloc[0]), float(adata1.obs[self.z_key].iloc[0]))
+        schedule = None
+        if sampling_reference is not None:
+            if source_sampling != 'depth_type_stratified':
+                raise ValueError('Schedule replay requires depth_type_stratified sampling.')
+            schedule = replay_source_schedule(sampling_reference, adata0, adata1, self.categories,
+                                             total_cells, self.z_key, self.label_key,
+                                             depth_bin_width_um, depth_grid_origin_um)
+        support = None
+        if self.local_matching_config is not None:
+            radius, _ = matching_parameters(self.local_matching_config, depth_bounds[1] - depth_bounds[0])
+            _, _, _, support = local_support(
+                adata0.obsm[self.spatial_key], adata0.obs[self.label_key].astype(str),
+                adata1.obsm[self.spatial_key], adata1.obs[self.label_key].astype(str), radius,
+            )
 
         # Execute chunked ODE integration
         mix_data = self._generate_and_prune_optimized(
@@ -480,13 +506,33 @@ class DeepSpatial:
             niche0=adata0.obsm.get('niche_cond') if self.niche_featurizer else None,
             niche1=adata1.obsm.get('niche_cond') if self.niche_featurizer else None,
             source_sampling=source_sampling, save_intermediates=save_intermediates,
-            depth_bounds_um=(float(adata0.obs[self.z_key].iloc[0]), float(adata1.obs[self.z_key].iloc[0])),
+            depth_bounds_um=depth_bounds,
             depth_bin_width_um=depth_bin_width_um, depth_grid_origin_um=depth_grid_origin_um,
+            schedule_override=schedule, matching_support=support,
         )
 
         # Assemble and restore to physical coordinates
         adata_segment = self._assemble_fast_anndata(adata0, adata1, mix_data)
-        return self._restore_3d_physical_coords(adata_segment)
+        result = self._restore_3d_physical_coords(adata_segment)
+        if schedule is not None:
+            # 精确复用原 S 的物理深度，避免归一化往返引入舍入差异。
+            result.obs[self.z_key] = schedule['reference_target_z_um']
+            result.obsm['spatial_3d'][:, 2] = schedule['reference_target_z_um']
+        if support is not None:
+            # 无支持端点的值直接取原数据，消除 float32/物理归一化往返误差。
+            anchored = result.obs.generation_mode.to_numpy() == 'source_anchor'
+            source = ad.concat([adata0, adata1], index_unique='-')
+            parent = result.obs.source_cell_index.to_numpy().copy()
+            parent[result.obs.source_direction.to_numpy() == 'backward'] += adata0.n_obs
+            result.obsm[self.spatial_key] = result.obsm[self.spatial_key].astype(np.float64)
+            result.obsm[self.spatial_key][anchored] = source.obsm[self.spatial_key][parent[anchored]]
+            result.obsm['spatial_3d'][anchored, :2] = source.obsm[self.spatial_key][parent[anchored]]
+            source_x = scipy.sparse.csr_matrix(source.X)[parent]
+            result.X = (scipy.sparse.diags((~anchored).astype(float)) @ result.X
+                        + scipy.sparse.diags(anchored.astype(float)) @ source_x).tocsr()
+            if 'expression_before_sparsification' in result.layers:
+                result.layers['expression_before_sparsification'][anchored] = source_x[anchored].toarray()
+        return result
 
     @torch.no_grad()
     def reconstruct_full_volume(self, 
@@ -498,7 +544,8 @@ class DeepSpatial:
                                 source_sampling: str = None,
                                 save_intermediates: bool = False,
                                 depth_bin_width_um: float = 10.0,
-                                depth_grid_origin_um: float = 0.0) -> ad.AnnData:
+                                depth_grid_origin_um: float = 0.0,
+                                sampling_reference: ad.AnnData = None) -> ad.AnnData:
         """
         High-level API to reconstruct the entire 3D volume from a list of slices.
 
@@ -511,6 +558,7 @@ class DeepSpatial:
             source_sampling: Existing mode or 'depth_type_stratified' for experiment S.
             depth_bin_width_um: Experiment S bin width in physical coordinates.
             depth_grid_origin_um: Experiment S physical grid center at bin index zero.
+            sampling_reference: Metadata-only AnnData for exact experiment S schedule replay.
 
         Returns:
             A single merged AnnData object representing the continuous 3D volume.
@@ -546,6 +594,7 @@ class DeepSpatial:
                 save_intermediates=save_intermediates,
                 depth_bin_width_um=depth_bin_width_um,
                 depth_grid_origin_um=depth_grid_origin_um,
+                sampling_reference=sampling_reference,
             )
             
             segment_list.append(segment)
@@ -570,6 +619,13 @@ class DeepSpatial:
                 unique_parents=int(full_volume.obs['parent_id'].nunique()),
             )
         
+        if self.local_matching_config is not None:
+            full_volume.uns['local_matching'] = dict(
+                **self.local_matching_config,
+                source_anchor_cells=int((full_volume.obs.generation_mode == 'source_anchor').sum()),
+                ode_cells=int((full_volume.obs.generation_mode == 'ode').sum()),
+                support_rule='same_type_and_physical_radius; not calibrated confidence',
+            )
         return full_volume
 
     # =========================================================================
@@ -603,12 +659,13 @@ class DeepSpatial:
 
     def _generate_and_prune_optimized(self, x0, g0, c0, x1, g1, c1, z0, z1, steps, target_cells, total_cells, dev, chunk_size,
                                      niche0=None, niche1=None, source_sampling='random', save_intermediates=False,
-                                     depth_bounds_um=None, depth_bin_width_um=10.0, depth_grid_origin_um=0.0):
+                                     depth_bounds_um=None, depth_bin_width_um=10.0, depth_grid_origin_um=0.0,
+                                     schedule_override=None, matching_support=None):
         """保持原深度/方向分布，按开关抽取来源并分块积分、保留追溯结果。"""
         N0, N1 = float(x0.shape[0]), float(x1.shape[0])
         schedule = None
         if source_sampling == 'depth_type_stratified':
-            schedule = depth_type_source_schedule(
+            schedule = schedule_override if schedule_override is not None else depth_type_source_schedule(
                 c0.cpu().numpy(), c1.cpu().numpy(), *depth_bounds_um, total_cells,
                 bin_width_um=depth_bin_width_um, grid_origin_um=depth_grid_origin_um,
             )
@@ -640,12 +697,30 @@ class DeepSpatial:
         final_g = torch.zeros((total_cells, g0.shape[1]), device=dev)
         final_c = torch.zeros(total_cells, device=dev, dtype=torch.long)
         continuous_c = torch.zeros((total_cells, self.num_classes), device=dev) if save_intermediates else None
+        match_info = None
+        if matching_support is not None:
+            match_info = {key: np.empty(total_cells, dtype=np.int64 if key == 'candidate_count' else float)
+                          for key in ('candidate_count', 'nearest_same_type_um', 'nearest_candidate_um', 'radius_um')}
 
         def process_direction(is_forward, src_indices, child_ids, x_ref, g_ref, c_ref, z_start, z_end, niche_ref):
             """同一 parent 的固定源条件贯穿完整轨迹，多个目标深度复用该轨迹。"""
             if len(child_ids) == 0: return
-            unique_parents, inverse_indices = torch.unique(src_indices, return_inverse=True)
             c_onehot_ref = torch.nn.functional.one_hot(c_ref, num_classes=self.num_classes).float()
+            if matching_support is not None:
+                diagnostic = matching_support[0 if is_forward else 1]
+                src_numpy, children = src_indices.cpu().numpy(), child_ids.cpu().numpy()
+                for key in match_info:
+                    values = diagnostic[key]
+                    match_info[key][children] = values if np.ndim(values) == 0 else values[src_numpy]
+                supported = torch.as_tensor(diagnostic['candidate_count'][src_numpy] > 0, device=dev)
+                anchors, parents = child_ids[~supported], src_indices[~supported]
+                final_x[anchors], final_g[anchors], final_c[anchors] = x_ref[parents], g_ref[parents], c_ref[parents]
+                if continuous_c is not None:
+                    continuous_c[anchors] = c_onehot_ref[parents]
+                src_indices, child_ids = src_indices[supported], child_ids[supported]
+                if len(child_ids) == 0:
+                    return
+            unique_parents, inverse_indices = torch.unique(src_indices, return_inverse=True)
 
             for i in range(0, len(unique_parents), chunk_size):
                 end_idx = min(i + chunk_size, len(unique_parents))
@@ -723,6 +798,7 @@ class DeepSpatial:
             'before_sparsification': before_sparsification.cpu().numpy() if before_sparsification is not None else None,
             'source_sampling': source_sampling,
             'depth_schedule': schedule,
+            'matching_info': match_info,
         }
 
     def _assemble_fast_anndata(self, adata0, adata1, mix_data):
@@ -765,6 +841,13 @@ class DeepSpatial:
             obsm={self.spatial_key: mix_data['x']}
         )
         schedule = mix_data.get('depth_schedule')
+        matching = mix_data.get('matching_info')
+        if matching is not None:
+            supported = matching['candidate_count'] > 0
+            result.obs['match_status'] = np.where(supported, 'matched', 'unsupported')
+            result.obs['generation_mode'] = np.where(supported, 'ode', 'source_anchor')
+            for key, values in matching.items():
+                result.obs['matching_' + key] = values
         if schedule is not None:
             result.obs['depth_bin_index'] = schedule['depth_bin_index']
             result.obs['depth_bin_center_um'] = schedule['grid_origin_um'] + schedule['depth_bin_index'] * schedule['bin_width_um']

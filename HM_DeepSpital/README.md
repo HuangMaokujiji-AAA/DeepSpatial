@@ -43,6 +43,30 @@ python HM_DeepSpital/examples/run_s.py --audit-only \
 
 可用 `--holdouts 2` 只推理一轮、`--audit-seeds 0` 跳过重复抽样检查、`--output-root` 指定新的输出目录。原训练配置和推理分支 `random/stratified` 不变。工程检查：`python HM_DeepSpital/tests/test_experiment_s.py`。
 
+## 实验 G：局部几何配对与 real/zero/shuffle 对照
+
+打开 `examples/run_g.ipynb`，使用新内核运行全部单元格。默认依次留出 1、2、3，每折从相同初始权重独立训练 real、zero、shuffle 三组，共九次 100 epochs 训练。模型容量、生态位维度、训练参数及生成密度沿用 V1；需要已有 S 各折的 `generated.h5ad` 和 `run_config.json`，不需要 S/V1 权重。S 的 H5AD 仅提供 obs 中的来源调度及 uns 预算，生成表达不进入训练。
+
+服务器项目根目录执行：
+
+```bash
+CUDA_VISIBLE_DEVICES=0 python HM_DeepSpital/examples/run_g.py
+
+# 可先单独检查真实数据配对，不训练；正式运行使用另一个新目录。
+python HM_DeepSpital/examples/run_g.py --pairing-only \
+    --output HM_DeepSpital/outputs/g_pairing_audit
+```
+
+`--holdouts 2` 只跑一折，`--modes real zero shuffle` 选择条件组，`--source-root` 指定已完成的 S 根目录，`--output` 指定新的输出根目录。已有折目录不会被覆盖；中途失败重跑需选择新目录。默认单设备顺序运行；训练设备由 JSON 的 `training.accelerator` 控制，`--device` 只控制推理。
+
+G 只允许同类型且在物理半径内的配对。`configs/merfish_g.json` 中预声明：参考间距 100 µm 时半径 300 µm、空间成本尺度 150 µm；按实际层间距同比缩放。成本为 `alpha*(物理XY距离/空间尺度)^2 + (1-alpha)*全局归一化表达余弦距离`，生态位不参与配对成本。按类型独立求局部 UOT，隔离无候选端点，保留原完整切片的均匀边际、不重新归一有效子集；均衡抽样也只使用允许的正质量边。半径和尺度是待验证的候选值，未按隐藏切片调参，作用于全部类型；稀有类评价仍为可见训练丰度 ≤5%。
+
+三组共用一次计算的配对索引，并逐细胞重放 S 的来源、类型、方向、薄层及目标深度。real 使用真实条件；zero 在相同维度输入全零；shuffle 在同类型、同可见切片内固定置换，训练与推理沿用同一置换。程序统计与归一化只由四张可见切片拟合，读取输入前排除留出文件。三组恢复相同的 Python/NumPy/Torch 随机状态后建立模型，记录并核对初始权重哈希；GPU 数值仍受后端确定性影响。
+
+无同类局部候选的端点不加入训练配对。推理时跳过 ODE，直接保留来源物理 XY、表达与类型，仅设置目标深度，标记 `match_status=unsupported`、`generation_mode=source_anchor`。这类细胞仍保存在结果中并纳入完整评价，不能当作可靠重建，也不能在比较时删除；其余为 `matched/ode`，表示存在几何候选。候选数、最近同类距离、运输质量和条件熵用于诊断，不是经校准的置信度。
+
+输出为 `outputs/g_holdouts_1_2_3/holdout_i/`：`shared/pair_indices.npz`、逐端点 `matching_support.csv`、逐类 `matching_by_type.csv`、配对抽样统计及共享配置；`real/zero/shuffle/` 各含配置、检查点、最终模型、`generated.h5ad`、薄层预算和 `generation_support_counts.csv`。配置记录来源 S 文件、配对、初始权重、条件张量、精确调度和实现 SHA-256。工程检查：`python -m unittest discover -s HM_DeepSpital/tests -p test_experiment_g.py`。
+
 ## 核心开关
 
 ```python

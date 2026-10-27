@@ -8,6 +8,7 @@ from tqdm import tqdm
 
 from .uot_solver import compute_uot_coupling
 from .sampling import sample_coupling_indices
+from .local_matching import compute_local_uot, sample_local_pairs
 
 class DeepSpatialDataset(Dataset):
     """
@@ -26,7 +27,10 @@ class DeepSpatialDataset(Dataset):
                  uot_tau: float = 0.05,
                  mode: str = 'fit',
                  balanced_fraction: float = 0.0,
-                 niche_key: str = None):
+                 niche_key: str = None,
+                 local_matching_config: dict = None,
+                 physical_spatial_key: str = 'spatial',
+                 physical_z_key: str = 'z_coord'):
         """
         Args:
             adata_list: List of AnnData objects.
@@ -40,6 +44,9 @@ class DeepSpatialDataset(Dataset):
             mode: 'fit' for full multi-slice training, 'predict' for limited slice pairs.
             balanced_fraction: Fraction sampled uniformly across valid same-type UOT blocks.
             niche_key: Precomputed source-neighborhood features; None disables conditioning.
+            local_matching_config: Optional physical same-type candidate/cost scales (G).
+            physical_spatial_key: Raw XY in micrometers for G; never normalized coordinates.
+            physical_z_key: Raw depth in micrometers for G's gap-dependent scales.
         """
         self.adata_list = adata_list
         self.spatial_key = spatial_key
@@ -54,6 +61,10 @@ class DeepSpatialDataset(Dataset):
         self.balanced_fraction = balanced_fraction
         self.niche_key = niche_key
         self.sampling_stats = []
+        self.local_matching_config = local_matching_config
+        self.physical_spatial_key = physical_spatial_key
+        self.physical_z_key = physical_z_key
+        self.matching_diagnostics = []
 
         # --- 1. Global Label Encoding ---
         self.label_encoder = LabelEncoder()
@@ -122,19 +133,38 @@ class DeepSpatialDataset(Dataset):
             delta_z = z1 - z0
 
             # Compute Unbalanced Optimal Transport (UOT)
-            pi = compute_uot_coupling(
-                x0, g0, c0, x1, g1, c1, 
-                alpha_spatial=self.alpha_spatial,
-                uot_reg=self.uot_reg,
-                uot_tau=self.uot_tau
-            )
+            if self.local_matching_config is not None:
+                a0, a1 = self.adata_list[k:k + 2]
+                physical_z = [float(a.obs[self.physical_z_key].iloc[0]) for a in (a0, a1)]
+                pi, support = compute_local_uot(
+                    a0.obsm[self.physical_spatial_key], g0, c0.argmax(1),
+                    a1.obsm[self.physical_spatial_key], g1, c1.argmax(1),
+                    physical_z[1] - physical_z[0], self.local_matching_config,
+                    self.alpha_spatial, self.uot_reg, self.uot_tau,
+                )
+                for side, (a, diagnostic) in enumerate(zip((a0, a1), support)):
+                    self.matching_diagnostics.append(dict(
+                        slice_pair=f'{k}-{k + 1}', side=side,
+                        source_z_um=physical_z[side], target_z_um=physical_z[1 - side],
+                        cell_id=a.obs_names.to_numpy(), cell_class=a.obs[self.label_key].astype(str).to_numpy(),
+                        **diagnostic,
+                    ))
+                if pi.sum() <= 0:
+                    raise ValueError(f'No supported local UOT edges in gap {physical_z}; no synthetic pairs added.')
+            else:
+                pi = compute_uot_coupling(
+                    x0, g0, c0, x1, g1, c1,
+                    alpha_spatial=self.alpha_spatial,
+                    uot_reg=self.uot_reg,
+                    uot_tau=self.uot_tau,
+                )
             
             # Sampling logic
-            pi_flat = pi.ravel()
-            pi_sum = pi_flat.sum()
+            pi_sum = float(pi.sum())
             
             if pi_sum > 0:
-                idx0, idx1, stats = sample_coupling_indices(
+                sampler = sample_local_pairs if self.local_matching_config is not None else sample_coupling_indices
+                idx0, idx1, stats = sampler(
                     pi, c0.argmax(axis=1), c1.argmax(axis=1), n_to_sample,
                     self.balanced_fraction,
                 )
@@ -147,13 +177,16 @@ class DeepSpatialDataset(Dataset):
                     'unique_target_cells': int(len(np.unique(idx1))),
                     'transport_total_mass': float(pi_sum),
                     'source_type_transport_mass': np.bincount(
-                        c0.argmax(axis=1), weights=pi.sum(axis=1), minlength=self.num_classes,
+                        c0.argmax(axis=1), weights=np.asarray(pi.sum(axis=1)).ravel(), minlength=self.num_classes,
                     ).tolist(),
                     'target_type_transport_mass': np.bincount(
-                        c1.argmax(axis=1), weights=pi.sum(axis=0), minlength=self.num_classes,
+                        c1.argmax(axis=1), weights=np.asarray(pi.sum(axis=0)).ravel(), minlength=self.num_classes,
                     ).tolist(),
                 })
                 self.sampling_stats.append(stats)
+                if self.local_matching_config is not None:
+                    distances = np.linalg.norm(a0.obsm[self.physical_spatial_key][idx0] - a1.obsm[self.physical_spatial_key][idx1], axis=1)
+                    stats['sampled_distance_um'] = dict(mean=float(distances.mean()), maximum=float(distances.max()))
 
                 # Store trajectory endpoints
                 self.trajectory_pairs['x0'].append(x0[idx0])
@@ -174,7 +207,7 @@ class DeepSpatialDataset(Dataset):
                         features = self.adata_list[slice_index].obsm[self.niche_key]
                         self.trajectory_pairs['h' + suffix].append(np.asarray(features[cell_indices], dtype=np.float32))
 
-            del pi, pi_flat, x0, g0, c0, x1, g1, c1
+            del pi, x0, g0, c0, x1, g1, c1
             gc.collect()
 
     def _convert_to_tensors(self):

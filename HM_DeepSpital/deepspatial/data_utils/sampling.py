@@ -164,3 +164,47 @@ def sample_coupling_indices(coupling, labels0, labels1, total, balanced_fraction
         order = np.random.permutation(total)
         idx0, idx1 = idx0[order], idx1[order]
     return idx0, idx1, {"balanced_pairs": balanced_n, "eligible_classes": [b[0] for b in blocks]}
+
+
+def replay_source_schedule(reference, adata0, adata1, categories, total, z_key, label_key,
+                           bin_width_um, grid_origin_um):
+    """重放 S 已保存的来源和目标深度；参考对象只需 obs/uns，不读取表达矩阵。"""
+    import pandas as pd
+
+    metadata = reference.uns['depth_type_sampling']
+    if metadata['bin_width_um'] != bin_width_um or metadata['grid_origin_um'] != grid_origin_um:
+        raise ValueError('Reference sampling grid differs from requested grid.')
+    z0, z1 = (float(a.obs[z_key].iloc[0]) for a in (adata0, adata1))
+    obs = reference.obs
+    selected = obs.loc[((obs.source_z == z0) & (obs.source_direction == 'forward'))
+                       | ((obs.source_z == z1) & (obs.source_direction == 'backward'))]
+    if len(selected) != total:
+        raise ValueError(f'Reference schedule count {len(selected)} differs from gap budget {total}.')
+    forward = selected.source_direction.to_numpy() == 'forward'
+    indices = selected.source_cell_index.to_numpy(dtype=np.int64)
+    codes = pd.Categorical(selected.source_cell_class.astype(str), categories=categories).codes.astype(np.int64)
+    depths = selected[z_key].to_numpy(dtype=np.float64)
+    bins = selected.depth_bin_index.to_numpy(dtype=np.int64)
+    if ((codes < 0).any() or not np.isfinite(depths).all() or (depths < z0).any() or (depths >= z1).any()
+            or not np.array_equal(np.floor((depths - grid_origin_um + bin_width_um / 2) / bin_width_um).astype(np.int64), bins)):
+        raise ValueError('Invalid reference types, depths or bin assignments.')
+    for side, mask in ((adata0, forward), (adata1, ~forward)):
+        idx = indices[mask]
+        if (idx < 0).any() or (idx >= side.n_obs).any():
+            raise ValueError('Reference parent indices are out of range.')
+        parents = side.obs.iloc[idx]
+        if (not np.array_equal(parents.index.astype(str), selected.source_cell_id[mask].astype(str))
+                or not np.array_equal(parents[label_key].astype(str), selected.source_cell_class[mask].astype(str))):
+            raise ValueError('Reference parent identity/type differs from visible input.')
+    budget = metadata['budget']
+    budget = budget.loc[(budget.gap_start_um == z0) & (budget.gap_end_um == z1)].copy()
+    if int(budget.allocated_n.sum()) != total:
+        raise ValueError('Reference bin budget differs from recorded cells.')
+    for row in budget.itertuples():
+        mask = ((bins == row.depth_bin_index) & (codes == row.source_class_code)
+                & (forward == (row.source_direction == 'forward')))
+        if int(mask.sum()) != row.allocated_n:
+            raise ValueError('Reference bin/type/direction counts differ from budget.')
+    return dict(t=(depths - z0) / (z1 - z0), is_forward=forward, source_index=indices,
+                source_class=codes, depth_bin_index=bins, budget=budget.to_dict('records'),
+                bin_width_um=bin_width_um, grid_origin_um=grid_origin_um, reference_target_z_um=depths)
