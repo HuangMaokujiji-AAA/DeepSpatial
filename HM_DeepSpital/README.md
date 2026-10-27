@@ -67,6 +67,23 @@ G 只允许同类型且在物理半径内的配对。`configs/merfish_g.json` �
 
 输出为 `outputs/g_holdouts_1_2_3/holdout_i/`：`shared/pair_indices.npz`、逐端点 `matching_support.csv`、逐类 `matching_by_type.csv`、配对抽样统计及共享配置；`real/zero/shuffle/` 各含配置、检查点、最终模型、`generated.h5ad`、薄层预算和 `generation_support_counts.csv`。配置记录来源 S 文件、配对、初始权重、条件张量、精确调度和实现 SHA-256。工程检查：`python -m unittest discover -s HM_DeepSpital/tests -p test_experiment_g.py`。
 
+### G 中断后的续跑
+
+使用新内核打开 `examples/run_g_resume.ipynb`，同时同步配套的 `examples/resume_g.py`。保持 `OUTPUT_ROOT` 指向原 `outputs/g_holdouts_1_2_3`，并先确认原训练进程/旧内核已停止。Notebook 先检查九组：完整结果跳过；未满轮数从 `checkpoints/last.ckpt` 恢复模型、EMA、优化器和进度；未开始组沿用原初始化训练；已满轮数但生成文件缺失时只补导出和重建。使用 shared 中的原配置，100 epochs 表示总轮数，不是追加 100 轮。
+
+续跑直接读取原 `shared/pair_indices.npz`，不重新计算 UOT；核对配对、S 文件、实现、初始化、条件及归一化统计。Windows/Linux 的原 CSV 换行哈希差异会兼容核对。完整组不改写任何文件，旧训练日志保留，续跑日志使用新的 `version_*`；生成文件写完临时文件再替换。检查点以 epoch 为边界，未保存的部分 batch 可能重算，随机数流不保证与未中断运行逐步相同。
+
+```bash
+# 只读检查，不启动训练。
+python HM_DeepSpital/examples/resume_g.py --check-only
+
+# 或使用脚本脱离 SSH 会话续跑；先确认原训练任务已停止。
+nohup env CUDA_VISIBLE_DEVICES=0 python -u HM_DeepSpital/examples/resume_g.py \
+    > HM_DeepSpital/outputs/g_resume.log 2>&1 &
+```
+
+工程检查：`python -m unittest discover -s HM_DeepSpital/tests -p test_resume_g.py`，覆盖已完成组跳过、优化器/EMA 恢复、总轮数、配对缓存、重复运行及只补生成。
+
 ## 核心开关
 
 ```python
