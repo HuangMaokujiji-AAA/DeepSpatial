@@ -68,6 +68,57 @@ model.fit(max_epochs=100)
 adata_3d = model.reconstruct_full_volume(adatas, thickness=10.0)
 ```
 
+## Visualize a saved reconstruction
+
+The standalone viewer reads coordinates and cell classes from an existing H5AD;
+it does not load a model or require a GPU. Use the project's Python environment
+(the script uses NumPy, h5py, Matplotlib, and Plotly):
+
+```bash
+python visualize_reconstruction.py --open
+```
+
+By default it reads `output/deepspatial_3d.h5ad` and writes an offline interactive
+`reconstruction_viewer.html`, `reconstruction_overview.png`, `virtual_slices.png`,
+and full cell-class counts to `output/reconstruction_visualization/`. The HTML
+supports rotating the 3D cloud, toggling classes, moving through XY slabs along Z,
+and viewing all rare-class cells separately. It embeds Plotly for offline use.
+
+```bash
+python visualize_reconstruction.py \
+  --input output/deepspatial_3d.h5ad \
+  --output-dir output/reconstruction_visualization \
+  --max-points 60000 --slab-width 10 --z-stretch 5
+```
+
+`--max-points 0` displays the full global point cloud. Slabs, rare-class views,
+and counts always use all relevant cells. `--z-stretch` changes the displayed
+aspect ratio only; click **Physical aspect** to restore physical proportions.
+The rare threshold defaults to <1% of this generated file's cells, which differs
+from defining rare classes using training-set counts during holdout evaluation.
+
+## Compare saved SpatialZ and DeepSpatial results
+
+```bash
+python compare_spatialz.py --spatialz-root ../SpatialZ --include-variants
+python tests/test_compare_spatialz.py
+```
+
+This compares SpatialZ's saved `merfish_holdout_009/generated_009.h5ad` with
+DeepSpatial's `holdout_1/predicted_holdout.h5ad` against the identical held-out
+slice. It checks the SpatialZ input hashes, truth identity, gene alignment, and
+thin-slab bounds before computing the metrics. Default DeepSpatial run:
+`output/merfish_holdout/20261018_021947_653667` (override with
+`--deepspatial-run`). Results go to `output/spatialz_comparison_20261018`.
+
+The main MSE, MAE, and Pearson PCC compare gene-mean expression profiles on both
+the provided X scale and a shared log1p scale. Rare-class XY coverage recall at
+50/100 µm uses a fixed training-defined class set and includes completely missing
+classes as zero. A separate file reports expression error after XY nearest-point
+association; it does not imply cell identity. `--include-variants` adds the saved
+joint gene/cell sampling variants to a separate table, preserving the original
+SpatialZ result as the main comparison. No models are retrained.
+
 ## Resources
 
 - Documentation, tutorials, and API reference: https://yyh030806.github.io/DeepSpatial/docs/
