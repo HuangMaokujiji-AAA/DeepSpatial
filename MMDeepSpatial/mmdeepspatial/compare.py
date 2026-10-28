@@ -9,6 +9,7 @@ import pandas as pd
 def compare_runs(output_root, e0_method="ae"):
     root = Path(output_root)
     summaries, types, protocols, environments = [], [], [], []
+    diagnostic_runs, diagnostic_types = [], []
     keys = ["holdout", "seed"]
     for arm in ("E0", "E1", "E2"):
         method = e0_method if arm == "E0" else "ae"
@@ -32,6 +33,26 @@ def compare_runs(output_root, e0_method="ae"):
             protocols.append(protocol)
             environments.append(manifest["source_sha256"])
             types.append(pd.read_csv(run/"per_type.csv"))
+            if cfg.get("diagnostics", False):
+                diag = pd.read_csv(run/"diagnostics_summary.csv")
+                diag_types = pd.read_csv(run/"diagnostics_per_type.csv")
+                expected_views = {"main"} | ({"l2_normalized"} if arm == "E0" else
+                                             {"angular"} if arm == "E1" else
+                                             {"euclidean_only", "hyperbolic_only"} |
+                                             {f"alpha_{a:g}" for a in cfg["diagnostic_alphas"]
+                                              if a != cfg["fusion_alpha"]})
+                if diag.variant.duplicated().any() or set(diag.variant) != expected_views:
+                    raise ValueError(f"Incomplete or duplicate diagnostic variants in {run}.")
+                if set(diag_types.variant) != expected_views:
+                    raise ValueError(f"Incomplete diagnostic type table in {run}.")
+                for frame in (diag, diag_types):
+                    if not ((frame.arm == arm) & (frame.holdout == row.holdout) &
+                            (frame.seed == row.seed) & (frame.method == method)).all():
+                        raise ValueError(f"Diagnostic run identity mismatch in {run}.")
+                if diag_types.duplicated(["variant", "cell_type"]).any():
+                    raise ValueError(f"Duplicate diagnostic type rows in {run}.")
+                diagnostic_runs.append(diag)
+                diagnostic_types.append(diag_types)
             if arm != "E0":
                 baseline = root/f"E0_{e0_method}"/f"holdout_{row.holdout}"/f"seed_{row.seed}"
                 base_manifest = json.loads((baseline/"manifest.json").read_text())
@@ -75,6 +96,24 @@ def compare_runs(output_root, e0_method="ae"):
     counts = all_runs.groupby("arm", observed=True).trainable_parameters.unique().to_dict()
     if e0_method == "ae" and len({tuple(v) for v in counts.values()}) != 1:
         raise ValueError("Unexpected AE parameter-count mismatch.")
+    if diagnostic_runs:
+        diagnostics = pd.concat(diagnostic_runs, ignore_index=True)
+        pd.concat(diagnostic_types, ignore_index=True).to_csv(destination/"diagnostic_all_cell_types.csv", index=False)
+        diagnostics.to_csv(destination/"diagnostic_all_runs.csv", index=False)
+        diagnostic_metrics = [m for m in metrics if m in diagnostics]
+        by_view_fold = diagnostics.groupby(["arm", "method", "variant", "holdout"], observed=True)[diagnostic_metrics].mean()
+        by_view_fold.reset_index().to_csv(destination/"diagnostic_seed_averaged_by_fold.csv", index=False)
+        view_aggregate = by_view_fold.groupby(["arm", "method", "variant"], observed=True).agg(["mean", "std"])
+        view_aggregate.columns = [f"{m}_{stat}" for m, stat in view_aggregate.columns]
+        view_aggregate.reset_index().to_csv(destination/"diagnostic_fold_mean_std.csv", index=False)
+        paired = []
+        for reference in ("main", "l2_normalized"):
+            ref = diagnostics[(diagnostics.arm == "E0") & (diagnostics.variant == reference)].set_index(keys)
+            for (arm, variant), part in diagnostics.groupby(["arm", "variant"], observed=True):
+                delta = part.set_index(keys)[diagnostic_metrics] - ref[diagnostic_metrics]
+                delta.columns = [f"delta_{m}" for m in delta.columns]
+                paired.append(delta.assign(arm=arm, variant=variant, reference=f"E0/{reference}").reset_index())
+        pd.concat(paired, ignore_index=True).to_csv(destination/"diagnostic_paired_deltas.csv", index=False)
     return all_runs, aggregate.reset_index(), per_type
 
 

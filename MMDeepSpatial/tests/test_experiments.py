@@ -19,7 +19,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from mmdeepspatial.compare import compare_runs
 from mmdeepspatial.data import Preprocessor
-from mmdeepspatial.evaluation import classification_table, evaluate, fit_probe
+from mmdeepspatial.evaluation import classification_table, diagnostic_view, evaluate, fit_probe
 from mmdeepspatial.experiment import DEFAULT_CONFIG, encode_adata, load_encoder, run_experiment
 from mmdeepspatial.representation import ExpressionAE, Geometry, pairwise_components, set_seed
 
@@ -43,6 +43,19 @@ def toy_slices(folder):
 
 
 class GeometryChecks(unittest.TestCase):
+    def test_smooth_radius_preserves_radial_signal_and_gradient(self):
+        model = ExpressionAE(8, 4, 12, "E1", 1., max_tangent_radius=1.5)
+        raw = torch.tensor([[3., 0, 0, 0], [6., 0, 0, 0], [12., 0, 0, 0]], requires_grad=True)
+        z = model.map_latent(raw)
+        radii = z.norm(dim=1)
+        self.assertTrue((radii[1:] > radii[:-1]).all())
+        self.assertLess(float(radii.max().detach()), float(np.tanh(1.5))+1e-6)
+        z[:, 0].sum().backward()
+        self.assertTrue(torch.isfinite(raw.grad).all())
+        self.assertTrue((raw.grad[:, 0] > 1e-6).all())
+        legacy = ExpressionAE(8, 4, 12, "E1", 1., max_tangent_radius=None)
+        np.testing.assert_allclose(legacy.map_latent(raw).detach().norm(dim=1), .98, atol=1e-6)
+
     def test_capacity_and_manifold_gradients(self):
         counts = []
         for arm in ("E0", "E1", "E2"):
@@ -103,6 +116,16 @@ class GeometryChecks(unittest.TestCase):
 
 
 class DataAndMetricChecks(unittest.TestCase):
+    def test_frozen_diagnostic_views(self):
+        z = np.array([[3., 4., 0, 0], [0, 0, 0, 0]], dtype="float32")
+        original = z.copy()
+        normalized = diagnostic_view(z, "l2_normalized")
+        np.testing.assert_allclose(normalized[0], [.6, .8, 0, 0])
+        self.assertTrue(np.isfinite(normalized).all())
+        np.testing.assert_array_equal(z, original)
+        np.testing.assert_array_equal(diagnostic_view(z, "euclidean_only"), z[:, :2])
+        np.testing.assert_array_equal(diagnostic_view(z, "hyperbolic_only"), z[:, 2:])
+
     def test_training_only_stats_genes_and_roundtrip(self):
         a = ad.AnnData(np.array([[1., 1, 3], [2, 1, 2], [3, 1, 1]], dtype="float32"),
                        var=pd.DataFrame(index=["variable", "constant", "variable2"]))
@@ -182,8 +205,9 @@ class EndToEndChecks(unittest.TestCase):
             # Spy on file parsing and fit order: no held-out AnnData before ALL fitting.
             import mmdeepspatial.experiment as runner
             actual_read, actual_fit, actual_probe = runner.read_slice, runner.fit_ae, runner.fit_probe
+            actual_diagnostics = runner.fit_diagnostic_views
             for arm in ("E0", "E1", "E2"):
-                state = dict(ae=False, probe=False)
+                state = dict(ae=False, probe=False, diagnostics=False)
                 def train(*args, **kwargs):
                     model, timing = actual_fit(*args, **kwargs)
                     state["ae"] = True
@@ -193,13 +217,19 @@ class EndToEndChecks(unittest.TestCase):
                     result = actual_probe(*args, **kwargs)
                     state["probe"] = True
                     return result
+                def diagnostics(*args, **kwargs):
+                    self.assertTrue(state["probe"])
+                    result = actual_diagnostics(*args, **kwargs)
+                    state["diagnostics"] = True
+                    return result
                 def read(path, key):
                     if path.name == "merfish_1.h5ad":
-                        self.assertTrue(state["ae"] and state["probe"])
+                        self.assertTrue(state["ae"] and state["probe"] and state["diagnostics"])
                     return actual_read(path, key)
                 with patch.object(runner, "read_slice", side_effect=read), \
                      patch.object(runner, "fit_ae", side_effect=train), \
-                     patch.object(runner, "fit_probe", side_effect=probe):
+                     patch.object(runner, "fit_probe", side_effect=probe), \
+                     patch.object(runner, "fit_diagnostic_views", side_effect=diagnostics):
                     result = run_experiment(arm, config)
                 self.assertEqual(len(result), 1)
                 run = folder/f"outputs/{arm}_ae/holdout_1/seed_0"
@@ -215,6 +245,15 @@ class EndToEndChecks(unittest.TestCase):
                 with np.load(run/"embeddings.npz") as emb:
                     np.testing.assert_allclose(z, emb["test"], atol=1e-6)
                 self.assertTrue((run/"completed.json").is_file())
+                diagnostic = pd.read_csv(run/"diagnostics_summary.csv").set_index("variant")
+                self.assertEqual(len(diagnostic), 5 if arm == "E2" else 2)
+                self.assertAlmostEqual(diagnostic.loc["main", "rare_macro_auprc"], result.rare_macro_auprc.iloc[0])
+                if arm == "E2":
+                    for variant in ("alpha_0.25", "alpha_0.75"):
+                        self.assertEqual(diagnostic.loc[variant, "probe_view"], "main")
+                        self.assertAlmostEqual(diagnostic.loc[variant, "rare_macro_auprc"],
+                                               diagnostic.loc["main", "rare_macro_auprc"])
+                    self.assertLess(result.test_max_ball_radius_fraction.iloc[0], np.tanh(1.5)+1e-6)
                 # Resume must not retrain or touch the test file.
                 with patch.object(runner, "fit_ae", side_effect=AssertionError("retrained")):
                     run_experiment(arm, config)
@@ -224,6 +263,10 @@ class EndToEndChecks(unittest.TestCase):
             self.assertEqual(len(all_runs), 3)
             self.assertEqual(all_runs.trainable_parameters.nunique(), 1)
             self.assertEqual(set(types.arm), {"E0", "E1", "E2"})
+            self.assertEqual(len(pd.read_csv(folder/"outputs/comparison/diagnostic_all_runs.csv")), 9)
+            diagnostic_deltas = pd.read_csv(folder/"outputs/comparison/diagnostic_paired_deltas.csv")
+            self.assertEqual(set(diagnostic_deltas.reference), {"E0/main", "E0/l2_normalized"})
+            self.assertEqual(len(diagnostic_deltas), 18)
             # PCA is a separate completed E0 baseline, not an overwritten AE run.
             result = run_experiment("E0", dict(config, e0_method="pca", shuffled_probe=True))
             self.assertEqual(result.trainable_parameters.iloc[0], 0)

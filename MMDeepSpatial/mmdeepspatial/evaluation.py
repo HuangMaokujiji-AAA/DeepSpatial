@@ -9,6 +9,8 @@ from sklearn.metrics import average_precision_score
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 
+from .representation import Geometry, probe_coordinates
+
 
 def fit_probe(x, labels, cfg, seed):
     if len(np.unique(labels)) < 2:
@@ -116,3 +118,68 @@ def evaluate(probe, test_probe_x, train_z, test_z, train_meta, test_meta, geomet
             summary[f"{name}_macro_{metric}"] = float(part[metric].mean())
         summary[f"{name}_coverage_evaluable_types"] = int(part.coverage.notna().sum())
     return table, pd.DataFrame([summary]), cell_results, probabilities
+
+
+def diagnostic_view(z, view):
+    """Frozen views; L2 distance on unit vectors has cosine neighbor ordering."""
+    if view in {"l2_normalized", "angular"}:
+        return z / np.maximum(np.linalg.norm(z, axis=1, keepdims=True), 1e-12)
+    if view == "euclidean_only":
+        return z[:, :z.shape[1]//2]
+    if view == "hyperbolic_only":
+        return z[:, z.shape[1]//2:]
+    raise ValueError(f"Unknown diagnostic view: {view}")
+
+
+def fit_diagnostic_views(train_z, train_meta, geometry, cfg, seed, device):
+    """Fit every diagnostic probe/scale on visible slices before reading test data."""
+    views = {"E0": [("l2_normalized", "E0")], "E1": [("angular", "E0")],
+             "E2": [("euclidean_only", "E0"), ("hyperbolic_only", "E1")]}
+    fitted = {}
+    for name, arm in views[geometry.arm]:
+        z = diagnostic_view(train_z, name)
+        geom = Geometry(arm, geometry.curvature).calibrate(
+            z, train_meta.slice_index.to_numpy(), seed, device)
+        probe = fit_probe(probe_coordinates(z, arm, geometry.curvature),
+                          train_meta.cell_type.to_numpy(), cfg, seed)
+        fitted[name] = dict(train_z=z, geometry=geom, probe=probe)
+    return fitted
+
+
+def evaluate_diagnostics(fitted, probe, train_z, test_z, train_meta, test_meta,
+                         geometry, cfg, seed, device, main_table, main_summary):
+    """Branch probes diagnose information; alpha sweeps keep the full probe fixed.
+
+    All rows are descriptive diagnostics. No test-based best-alpha selection.
+    Endpoint neighbor metrics come from the single-branch rows, avoiding duplicate
+    geometry evaluation; their classification metrics use branch-specific probes.
+    """
+    tables, summaries, probabilities = [], [], {}
+
+    def append(name, table, summary, geom, dim, probe_view, alpha):
+        info = dict(variant=name, probe_view=probe_view, embedding_dim=dim,
+                    fusion_alpha=alpha, geometry_arm=geom.arm,
+                    euclidean_scale=geom.scales[0], hyperbolic_scale=geom.scales[1])
+        tables.append(table.assign(**info))
+        summaries.append(summary.assign(**info))
+
+    append("main", main_table, main_summary, geometry, train_z.shape[1], "main",
+           geometry.alpha if geometry.arm == "E2" else np.nan)
+    for name, view in fitted.items():
+        z, geom = diagnostic_view(test_z, name), view["geometry"]
+        table, summary, _, probs = evaluate(
+            view["probe"], probe_coordinates(z, geom.arm, geom.curvature),
+            view["train_z"], z, train_meta, test_meta, geom, cfg, seed, device)
+        alpha = 1. if name == "euclidean_only" else 0. if name == "hyperbolic_only" else np.nan
+        append(name, table, summary, geom, z.shape[1], name, alpha)
+        probabilities[name] = probs
+    if geometry.arm == "E2":
+        for alpha in cfg["diagnostic_alphas"]:
+            if alpha == geometry.alpha:
+                continue
+            geom = Geometry("E2", geometry.curvature, alpha, geometry.scales)
+            table, summary, _, _ = evaluate(
+                probe, probe_coordinates(test_z, "E2", geometry.curvature),
+                train_z, test_z, train_meta, test_meta, geom, cfg, seed, device)
+            append(f"alpha_{alpha:g}", table, summary, geom, train_z.shape[1], "main", alpha)
+    return pd.concat(tables, ignore_index=True), pd.concat(summaries, ignore_index=True), probabilities

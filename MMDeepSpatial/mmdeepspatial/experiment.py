@@ -19,15 +19,15 @@ from sklearn.decomposition import PCA
 import torch
 
 from .data import Preprocessor, cell_metadata, input_paths, read_slice
-from .evaluation import evaluate, fit_probe
+from .evaluation import evaluate, evaluate_diagnostics, fit_diagnostic_views, fit_probe
 from .representation import ExpressionAE, Geometry, encode, fit_ae, probe_coordinates, set_seed
 
 ROOT = Path(__file__).resolve().parents[1]
 
 DEFAULT_CONFIG = dict(
     input_glob=str(ROOT.parent / "data/merfish_mouse_hypothalamus/**/merfish_[0-4].h5ad"),
-    output_root=str(ROOT / "outputs/representations_v1"),
-    holdouts=[1, 2, 3], seeds=[0, 1, 2, 3, 4], label_key="cell_class",
+    output_root=str(ROOT / "outputs/representations_v2"),
+    holdouts=[1, 2, 3], seeds=[42, 0, 1, 2, 3], label_key="cell_class",
     layer=None, transform="log1p", n_genes=0, rare_fraction=.05,
     dim=32, hidden=128, epochs=100, batch_size=512, lr=1e-3, weight_decay=1e-5,
     grad_clip=5., curvature=1., fusion_alpha=.5, log_every=10,
@@ -36,6 +36,7 @@ DEFAULT_CONFIG = dict(
     coverage_quantile=.95, coverage_calibration_max=2048,
     probe_c=1., probe_class_weight="balanced", probe_max_iter=2000,
     shuffled_probe=False,
+    max_tangent_radius=1.5, diagnostics=True, diagnostic_alphas=[.25, .75],
 )
 
 
@@ -92,6 +93,15 @@ def validate_config(cfg, paths, arm):
         raise ValueError("Use identity/log1p transform and ae/pca E0 method.")
     if cfg["probe_class_weight"] not in {None, "balanced"}:
         raise ValueError("probe_class_weight must be null or balanced.")
+    if not isinstance(cfg["max_tangent_radius"], (int, float)) or not (0 < cfg["max_tangent_radius"] <= 2.):
+        raise ValueError("max_tangent_radius must be in (0, 2].")
+    if type(cfg["diagnostics"]) is not bool:
+        raise ValueError("diagnostics must be boolean.")
+    alphas = cfg["diagnostic_alphas"]
+    if not isinstance(alphas, list) or any(not isinstance(v, (int, float)) or not 0 < v < 1 for v in alphas):
+        raise ValueError("diagnostic_alphas must be a list of weights strictly between 0 and 1.")
+    if len(set(alphas)) != len(alphas):
+        raise ValueError("diagnostic_alphas must be unique; endpoints use single-branch diagnostics.")
 
 
 def environment():
@@ -189,6 +199,12 @@ def run_experiment(arm, config=None):
                 train_probe_x = probe_coordinates(train_z, arm, cfg["curvature"])
                 probe = fit_probe(train_probe_x, meta.cell_type.to_numpy(), cfg, seed)
                 joblib.dump(probe, folder/"probe.joblib")
+                start = time.perf_counter()
+                diagnostic_views = fit_diagnostic_views(train_z, meta, geometry, cfg, seed, device) if cfg["diagnostics"] else {}
+                timing["diagnostic_fit_seconds"] = time.perf_counter()-start
+                if cfg["diagnostics"]:
+                    joblib.dump({name: view["probe"] for name, view in diagnostic_views.items()},
+                                folder/"diagnostic_probes.joblib")
                 # Encoder, normalization, geometry scales and probe are now all frozen.
                 test = read_slice(paths[holdout], cfg["label_key"])
                 test_x = prep.apply(test)
@@ -205,6 +221,17 @@ def run_experiment(arm, config=None):
                 table, summary, cell_results, probabilities = evaluate(
                     probe, test_probe_x, train_z, test_z, meta, test_meta, geometry, cfg, seed, device)
                 timing["evaluation_seconds"] = time.perf_counter()-start
+                if cfg["diagnostics"]:
+                    start = time.perf_counter()
+                    diagnostic_types, diagnostic_summary, diagnostic_probs = evaluate_diagnostics(
+                        diagnostic_views, probe, train_z, test_z, meta, test_meta, geometry,
+                        cfg, seed, device, table, summary)
+                    timing["diagnostic_evaluation_seconds"] = time.perf_counter()-start
+                    for frame, name in ((diagnostic_types, "diagnostics_per_type.csv"),
+                                        (diagnostic_summary, "diagnostics_summary.csv")):
+                        frame.assign(arm=arm, method=method, holdout=holdout, seed=seed).to_csv(folder/name, index=False)
+                    np.savez_compressed(folder/"diagnostic_probabilities.npz",
+                                        classes=probe.classes_.astype(str), **diagnostic_probs)
                 recon = model.inverse_transform(test_z) if method == "pca" else None
                 if recon is None:
                     with torch.no_grad():
@@ -217,6 +244,11 @@ def run_experiment(arm, config=None):
                         norm = np.linalg.norm(z[:, split:], axis=1)*cfg["curvature"]**.5
                         timing[f"{name}_max_ball_radius_fraction"] = float(norm.max())
                         timing[f"{name}_near_boundary_fraction"] = float(np.mean(norm >= .979))
+                        timing[f"{name}_ball_radius_fraction_median"] = float(np.median(norm))
+                        timing[f"{name}_ball_radius_fraction_p95"] = float(np.quantile(norm, .95))
+                        timing[f"{name}_ball_radius_fraction_std"] = float(norm.std())
+                        timing[f"{name}_near_mapping_limit_fraction"] = float(np.mean(
+                            norm >= np.tanh(.95*cfg["max_tangent_radius"])))
                         if not np.isfinite(norm).all() or norm.max() >= 1:
                             raise FloatingPointError("Invalid Poincare embedding.")
                 for key, value in dict(arm=arm, method=method, holdout=holdout, seed=seed, **timing).items():
@@ -261,7 +293,8 @@ def load_encoder(folder, device="cpu"):
         model = joblib.load(folder/"pca.joblib")
     else:
         checkpoint = torch.load(folder/"encoder.pt", map_location="cpu", weights_only=True)
-        model = ExpressionAE(**{k: checkpoint[k] for k in ("n_genes", "dim", "hidden", "arm", "curvature")})
+        model = ExpressionAE(**{k: checkpoint[k] for k in ("n_genes", "dim", "hidden", "arm", "curvature")},
+                             max_tangent_radius=checkpoint.get("max_tangent_radius"))
         model.load_state_dict(checkpoint["state_dict"])
         model = model.to(device).eval()
     geometry = Geometry(**json.loads((folder/"geometry.json").read_text()))

@@ -21,13 +21,17 @@ def set_seed(seed):
 
 
 class ExpressionAE(nn.Module):
-    def __init__(self, n_genes, dim=32, hidden=128, arm="E0", curvature=1.0):
+    def __init__(self, n_genes, dim=32, hidden=128, arm="E0", curvature=1.0,
+                 max_tangent_radius=1.5):
         super().__init__()
         if arm not in {"E0", "E1", "E2"} or dim < 2 or (arm == "E2" and dim % 2):
             raise ValueError("Use E0/E1/E2, dim>=2, and even dim for E2.")
         if not np.isfinite(curvature) or curvature <= 0:
             raise ValueError("Poincare c must be positive; sectional curvature is -c.")
+        if max_tangent_radius is not None and not (0 < max_tangent_radius <= 2.):
+            raise ValueError("max_tangent_radius must be in (0, 2], or None for legacy checkpoints.")
         self.arm, self.dim, self.curvature = arm, dim, curvature
+        self.max_tangent_radius = max_tangent_radius
         self.e_dim = dim if arm == "E0" else dim // 2 if arm == "E2" else 0
         self.ball = geoopt.PoincareBall(c=curvature, learnable=False)
         # Identical linear layers and parameter initialization in every arm.
@@ -36,10 +40,18 @@ class ExpressionAE(nn.Module):
         self.decoder = nn.Sequential(nn.Linear(dim, hidden), nn.ReLU(), nn.Linear(hidden, n_genes))
 
     def encode(self, x):
-        raw = self.encoder(x)
+        return self.map_latent(self.encoder(x))
+
+    def map_latent(self, raw):
         if self.arm == "E0":
             return raw
-        h = self.ball.expmap0(raw[:, self.e_dim:])
+        tangent = raw[:, self.e_dim:]
+        if self.max_tangent_radius is not None:
+            # Smooth, strictly monotone radial contraction before expmap. With
+            # limit=1.5, sqrt(c)*||h|| < tanh(1.5)=0.905, below either hard clip.
+            tangent = tangent / (1 + self.curvature * tangent.square().sum(-1, keepdim=True)
+                                 / self.max_tangent_radius**2).sqrt()
+        h = self.ball.expmap0(tangent)
         # Extra margin beyond geoopt's numeric projection, in float32 as well.
         radius = .98 / self.curvature ** .5
         h = h * (radius / h.norm(dim=-1, keepdim=True).clamp_min(1e-12)).clamp(max=1)
@@ -54,7 +66,8 @@ class ExpressionAE(nn.Module):
 
 def fit_ae(x, cfg, arm, seed, device, folder):
     set_seed(seed)
-    model = ExpressionAE(x.shape[1], cfg["dim"], cfg["hidden"], arm, cfg["curvature"]).to(device)
+    model = ExpressionAE(x.shape[1], cfg["dim"], cfg["hidden"], arm, cfg["curvature"],
+                         cfg["max_tangent_radius"]).to(device)
     optimizer = torch.optim.AdamW(model.parameters(), lr=cfg["lr"], weight_decay=cfg["weight_decay"])
     generator = torch.Generator().manual_seed(seed)
     loader = DataLoader(TensorDataset(torch.from_numpy(x)), batch_size=cfg["batch_size"],
@@ -66,10 +79,13 @@ def fit_ae(x, cfg, arm, seed, device, folder):
     for epoch in range(cfg["epochs"]):
         model.train()
         loss_sum, maximum_grad, max_radius, boundary_cells = 0., 0., 0., 0
+        raw_norms, ball_norms = [], []
         for (batch,) in loader:
             batch = batch.to(device)
             optimizer.zero_grad(set_to_none=True)
-            recon, z = model(batch)
+            raw = model.encoder(batch)
+            z = model.map_latent(raw)
+            recon = model.decoder(z)
             loss = (recon - batch).square().mean()
             if not torch.isfinite(loss) or not torch.isfinite(z).all():
                 raise FloatingPointError(f"Nonfinite loss/embedding at epoch {epoch+1}.")
@@ -82,9 +98,22 @@ def fit_ae(x, cfg, arm, seed, device, folder):
                 norms = z[:, model.e_dim:].detach().norm(dim=1) * cfg["curvature"] ** .5
                 max_radius = max(max_radius, float(norms.max()))
                 boundary_cells += int((norms >= .979).sum())
+                raw_norms.append((raw[:, model.e_dim:].detach().norm(dim=1)
+                                  * cfg["curvature"]**.5).cpu().numpy())
+                ball_norms.append(norms.cpu().numpy())
         row = dict(epoch=epoch+1, train_mse=loss_sum/len(x), grad_norm_max=maximum_grad,
                    max_ball_radius_fraction=max_radius, near_boundary_fraction=boundary_cells/len(x),
                    nonfinite_batches=0)
+        if raw_norms:
+            raw_values, radii = np.concatenate(raw_norms), np.concatenate(ball_norms)
+            row.update(raw_tangent_radius_mean=float(raw_values.mean()),
+                       raw_tangent_radius_p95=float(np.quantile(raw_values, .95)),
+                       raw_tangent_radius_max=float(raw_values.max()),
+                       ball_radius_fraction_median=float(np.median(radii)),
+                       ball_radius_fraction_p95=float(np.quantile(radii, .95)),
+                       ball_radius_fraction_std=float(radii.std()),
+                       near_mapping_limit_fraction=float(np.mean(
+                           radii >= np.tanh(.95*cfg["max_tangent_radius"]))))
         history.append(row)
         pd.DataFrame(history).to_csv(folder / "training.csv", index=False)
         if epoch == 0 or (epoch+1) % cfg["log_every"] == 0 or epoch+1 == cfg["epochs"]:
@@ -97,7 +126,8 @@ def fit_ae(x, cfg, arm, seed, device, folder):
                   trainable_parameters=sum(p.numel() for p in model.parameters() if p.requires_grad))
     torch.save({"state_dict": {k: v.cpu() for k, v in model.state_dict().items()},
                 "n_genes": x.shape[1], "dim": cfg["dim"], "hidden": cfg["hidden"],
-                "arm": arm, "curvature": cfg["curvature"]}, folder / "encoder.pt")
+                "arm": arm, "curvature": cfg["curvature"],
+                "max_tangent_radius": cfg["max_tangent_radius"]}, folder / "encoder.pt")
     return model, timing
 
 
