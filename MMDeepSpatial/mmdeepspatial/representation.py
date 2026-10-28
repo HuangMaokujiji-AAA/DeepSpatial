@@ -64,14 +64,28 @@ class ExpressionAE(nn.Module):
         return self.decoder(z), z
 
 
-def fit_ae(x, cfg, arm, seed, device, folder):
+def fit_ae(x, cfg, arm, seed, device, folder, sample_weights=None, graph=None):
     set_seed(seed)
-    model = ExpressionAE(x.shape[1], cfg["dim"], cfg["hidden"], arm, cfg["curvature"],
-                         cfg["max_tangent_radius"]).to(device)
+    model_class = ExpressionAE
+    if graph is not None:
+        from .graph import InductiveGCNAE
+        if arm != "E0":
+            raise ValueError("The graph experiment currently supports Euclidean geometry only.")
+        model_class = InductiveGCNAE
+    model = model_class(x.shape[1], cfg["dim"], cfg["hidden"], arm, cfg["curvature"],
+                        cfg["max_tangent_radius"]).to(device)
     optimizer = torch.optim.AdamW(model.parameters(), lr=cfg["lr"], weight_decay=cfg["weight_decay"])
     generator = torch.Generator().manual_seed(seed)
-    loader = DataLoader(TensorDataset(torch.from_numpy(x)), batch_size=cfg["batch_size"],
+    weights = np.ones(len(x), dtype="float32") if sample_weights is None else np.asarray(sample_weights, dtype="float32")
+    if weights.shape != (len(x),) or not np.isfinite(weights).all() or (weights <= 0).any():
+        raise ValueError("Reconstruction weights must be positive, finite, and match training cells.")
+    values = torch.from_numpy(x) if graph is None else torch.arange(len(x))
+    loader = DataLoader(TensorDataset(values, torch.from_numpy(weights)), batch_size=cfg["batch_size"],
                         shuffle=True, generator=generator, num_workers=0)
+    if graph is not None:
+        graph_inputs = torch.as_tensor(graph["inputs"], device=device)
+        graph_indices = torch.as_tensor(graph["indices"], device=device)
+        targets = torch.as_tensor(x, device=device)
     history = []
     start = time.perf_counter()
     if device.type == "cuda":
@@ -79,20 +93,29 @@ def fit_ae(x, cfg, arm, seed, device, folder):
     for epoch in range(cfg["epochs"]):
         model.train()
         loss_sum, maximum_grad, max_radius, boundary_cells = 0., 0., 0., 0
+        objective_sum = 0.
         raw_norms, ball_norms = [], []
-        for (batch,) in loader:
+        for batch, batch_weights in loader:
             batch = batch.to(device)
             optimizer.zero_grad(set_to_none=True)
-            raw = model.encoder(batch)
-            z = model.map_latent(raw)
+            if graph is None:
+                raw = model.encoder(batch)
+                z = model.map_latent(raw)
+                target = batch
+            else:
+                z = model.encode_neighborhood(graph_inputs[graph_indices[batch]])
+                target = targets[batch]
             recon = model.decoder(z)
-            loss = (recon - batch).square().mean()
+            errors = (recon - target).square()
+            mse = errors.mean()
+            loss = mse if sample_weights is None else (errors.mean(1)*batch_weights.to(device)).mean()
             if not torch.isfinite(loss) or not torch.isfinite(z).all():
                 raise FloatingPointError(f"Nonfinite loss/embedding at epoch {epoch+1}.")
             loss.backward()
             grad = torch.nn.utils.clip_grad_norm_(model.parameters(), cfg["grad_clip"], error_if_nonfinite=True)
             optimizer.step()
-            loss_sum += float(loss.detach()) * len(batch)
+            loss_sum += float(mse.detach()) * len(batch)
+            objective_sum += float(loss.detach()) * len(batch)
             maximum_grad = max(maximum_grad, float(grad))
             if arm != "E0":
                 norms = z[:, model.e_dim:].detach().norm(dim=1) * cfg["curvature"] ** .5
@@ -102,6 +125,7 @@ def fit_ae(x, cfg, arm, seed, device, folder):
                                   * cfg["curvature"]**.5).cpu().numpy())
                 ball_norms.append(norms.cpu().numpy())
         row = dict(epoch=epoch+1, train_mse=loss_sum/len(x), grad_norm_max=maximum_grad,
+                   train_objective=objective_sum/len(x),
                    max_ball_radius_fraction=max_radius, near_boundary_fraction=boundary_cells/len(x),
                    nonfinite_batches=0)
         if raw_norms:
@@ -127,7 +151,8 @@ def fit_ae(x, cfg, arm, seed, device, folder):
     torch.save({"state_dict": {k: v.cpu() for k, v in model.state_dict().items()},
                 "n_genes": x.shape[1], "dim": cfg["dim"], "hidden": cfg["hidden"],
                 "arm": arm, "curvature": cfg["curvature"],
-                "max_tangent_radius": cfg["max_tangent_radius"]}, folder / "encoder.pt")
+                "max_tangent_radius": cfg["max_tangent_radius"],
+                "encoder_kind": "gcn" if graph is not None else "ae"}, folder / "encoder.pt")
     return model, timing
 
 
@@ -167,8 +192,20 @@ def pairwise_components(a, b, arm, curvature):
 
 
 class Geometry:
-    def __init__(self, arm, curvature, alpha=.5, scales=(1., 1.)):
+    def __init__(self, arm, curvature, alpha=.5, scales=(1., 1.), metric="euclidean"):
+        if metric not in {"euclidean", "cosine"} or (metric == "cosine" and arm != "E0"):
+            raise ValueError("Cosine distance is supported only for Euclidean vectors.")
         self.arm, self.curvature, self.alpha, self.scales = arm, curvature, alpha, tuple(scales)
+        self.metric = metric
+
+    def components(self, a, b):
+        if self.metric == "cosine":
+            a = torch.nn.functional.normalize(a.double(), dim=1, eps=1e-12)
+            b = torch.nn.functional.normalize(b.double(), dim=1, eps=1e-12)
+            # Matches sklearn's cross-distance convention: a zero vector has
+            # cosine distance 1 to any reference, including another zero vector.
+            return (1-a@b.T).clamp(0, 2), None
+        return pairwise_components(a, b, self.arm, self.curvature)
 
     def calibrate(self, train_z, slice_ids, seed, device):
         """Robust medians of random cross-slice training pairs, never held-out cells."""
@@ -184,7 +221,7 @@ class Geometry:
         for start in range(0, len(left), 128):
             a = torch.as_tensor(train_z[left[start:start+128]], device=device)
             b = torch.as_tensor(train_z[right[start:start+128]], device=device)
-            for j, d in enumerate(pairwise_components(a, b, self.arm, self.curvature)):
+            for j, d in enumerate(self.components(a, b)):
                 if d is not None:
                     components[j].extend(d.diag().cpu().tolist())
         scales = []
@@ -196,7 +233,7 @@ class Geometry:
         return self
 
     def distances(self, a, b):
-        de, dh = pairwise_components(a, b, self.arm, self.curvature)
+        de, dh = self.components(a, b)
         if self.arm == "E0":
             return de / self.scales[0]
         if self.arm == "E1":

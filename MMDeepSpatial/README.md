@@ -1,6 +1,7 @@
 # MMDeepSpatial：E0 / E1 / E2 表示验证
 
 本目录与 `HM_DeepSpital` 同级，全部新增代码独立存放，读取相同 MERFISH H5AD。
+新增的 A0–A5 欧氏与类别平衡对照见本文末尾 [A0–A5 欧氏对照实验](#a0a5-欧氏对照实验)。
 本次实现用户指定的**前三个表达表示实验（Phase 1）**，编号以本目录为准：
 
 | Notebook | 表示和距离 | 问题 | 默认物理 GPU |
@@ -143,3 +144,74 @@ python -m unittest discover -s tests -v
 新增检查覆盖大范数输入的径向梯度、归一化与分支视图、诊断拟合的防泄露时序、checkpoint 往返和诊断配对汇总。这些是合成数据工程测试，不是 MERFISH 生物学实验结果；正式结果由服务器 notebook 产生。
 
 几何组件接口参考：[geoopt 官方文档](https://geoopt.readthedocs.io/en/latest/manifolds.html)。
+
+## A0–A5 欧氏对照实验
+
+本轮用于区分表达压缩、类别不均衡和图聚合的贡献。保留 E0/E1/E2 代码及已有结果，新输出根目录为 `outputs/euclidean_v1`。
+
+| 实验臂 | 编码器与检索距离 | 编码器训练标签 | 入口 / 物理 GPU |
+|---|---|---|---|
+| A0 | 未压缩的训练标准化表达，余弦距离 | 不使用 | `A0_A1_Baselines.ipynb` / 7 |
+| A1 | PCA 32 维，欧氏距离 | 不使用 | `A0_A1_Baselines.ipynb` / 7 |
+| A2 | 欧氏 MLP AE 32 维，欧氏距离 | 不使用 | `A2_A3_Autoencoders.ipynb` / 5 |
+| A3 | A2＋类别频率加权重建 | 使用可见训练标签 | `A2_A3_Autoencoders.ipynb` / 5 |
+| A4 | 两层欧氏 GCN AE 32 维，欧氏距离 | 不使用 | `A4_A5_GCN.ipynb` / 0 |
+| A5 | A4＋与 A3 相同的重建加权 | 使用可见训练标签 | `A4_A5_GCN.ipynb` / 0 |
+
+三个 notebook 各用独立内核，从第一格运行；显卡可在第一格修改。默认隐藏 `[1,2,3]`、seeds `[42,0,1,2,3]`，每个神经编码器训练 100 epochs。每组有 15 个评价任务；A0/A1 不训练神经网络，完整 SVD PCA 本身是确定性的，多 seed 不代表不同 PCA 模型。
+
+所有组复用同一训练预处理、基因集合、StandardScaler＋LogisticRegression probe（`C=1`、`class_weight='balanced'`、`max_iter=2000`）、检索和 coverage 协议。A0 的 probe 使用完整标准化表达，检索计算真实余弦距离；不先把 probe 输入 L2 归一化。零向量与任何参考的余弦距离定义为 1。A0 无压缩重建任务，MSE 记 NaN；A0/A1 无神经可训练参数，不声称与 AE 同容量。
+
+### 类别平衡与公平性
+
+A3/A5 只改变编码器的重建损失。可见训练细胞类型数为 `n_c`，每个细胞的权重为 `n_c^(-0.5)`，再按全部训练细胞归一化，使平均权重为 1。`balance_power=0.5` 固定，两组一致；没有改变 minibatch 的均匀抽样、更新次数、解码器、probe 或测试集。
+
+训练日志同时保存未加权 `train_mse` 和实际优化的 `train_objective`；`training_weights.csv` 保存逐细胞训练权重。这是训练标签辅助对照，不能将其收益归因于无监督几何。A2/A3/A4/A5 的线性层结构、初始化 seed、优化器和参数量完全相同。
+
+### GCN 与留出切片推理
+
+无需 PyG 或新依赖。原生 PyTorch 实现两层行归一化图卷积：`Z = S ReLU(S X W0 + b0) W1 + b1`，使用与 AE 相同的解码器；不是 MManiST 的复现。
+
+`S` 是**可见同一切片内**的表达余弦 kNN＋自环，默认 `graph_k=10`，每行恰有 10 个邻居和自身，权重均为 1/11。它是有向、行归一化图，不是对称归一化空间图。每个可见切片须多于 k 个细胞。图的构建、边和两层邻域展开均不使用类型标签或 XY。
+
+GCN 使用均匀 minibatch，对中心节点重建自身原始标准化表达；预先缓存第一层的邻域表达均值，每批精确展开第二层需要的邻居，梯度通过两层权重，不截断或冻结训练隐藏状态。
+
+测试时每个查询仅按表达连接冻结的**全部可见切片参考库**：第一层聚合查询自身表达与 k 个参考表达；第二层聚合查询隐藏状态与参考节点在训练图上的第一层隐藏状态。参考图保持不变，无查询间连边，无隐藏 XY、类型标签或测试拟合统计量。查询不受同批其他测试细胞影响。训练的同切片图与测试的跨切片参考查询不同，这一归纳迁移是本实验显式检验的部分。
+
+保存的 GCN 可通过现有 `load_encoder` / `encode_adata` 对新细胞推理；加载时恢复冻结参考库。可见训练细胞的表示使用 `embeddings.npz` 中的 `train` 数组。不要把训练细胞重新当作新查询编码，替换原先训练图上的表示。
+
+### 运行、复用与输出
+
+统一科学配置在三个 notebook 的配置格中。默认写入：
+
+```text
+outputs/euclidean_v1/A0..A5/holdout_*/seed_*/
+  manifest.json / environment.json / completed.json 或 failed.json
+  preprocessing.npz / geometry.json / train_cells.csv / test_cells.csv
+  training_weights.csv / train_type_counts_by_slice.csv / test_type_counts.csv
+  encoder.pt 或 raw.joblib 或 pca.joblib
+  training.csv（神经网络）/ pca_variance.csv（PCA）
+  graph_reference.npz（GCN 的可见表达、邻居索引、切片索引）
+  embeddings.npz / probe.joblib / probe_probabilities.npz
+  summary.csv / per_type.csv / test_predictions.csv
+```
+
+Notebook 默认在存在 `outputs/representations_v2/E0_ae` 时，将其作为 A2 的复用来源。复用前核验 seed/split、训练超参、输入字节哈希、预处理及完成状态；保存原源码记录、权重哈希和训练日志哈希，将原 checkpoint/日志复制到新 A2 目录，然后只重新提取表示、拟合 probe 并评价。原结果不改动。`encoder_reused=True` 时 `train_seconds=0`，原训练耗时另存 `source_train_seconds`，不能把它当作重新训练的速度优势。设置 `REUSE_A2_ROOT=None` 可重新训练 A2；来源不兼容时明确报错，不静默替换。
+
+短流程检查需统一设置单个 holdout/seed、2 epochs、`REUSE_A2_ROOT=None` 和独立的检查输出目录。正式运行使用全新正式目录。相同配置、源码和输入的已完成任务可跳过；不覆盖未完成或不同协议的任务。
+
+六组都完成后，任一 notebook 最后一格设置 `COMPARE_WHEN_READY=True`。命令行也可运行（在 `MMDeepSpatial` 目录）：
+
+```bash
+# 三个独立进程可分别在不同卡运行；默认配置不复用旧 A2。
+CUDA_VISIBLE_DEVICES=7 python -m mmdeepspatial.euclidean --arms A0 A1
+CUDA_VISIBLE_DEVICES=5 python -m mmdeepspatial.euclidean --arms A2 A3
+CUDA_VISIBLE_DEVICES=0 python -m mmdeepspatial.euclidean --arms A4 A5
+
+# --config 可提供相同 JSON 配置；完整性检查通过后才写比较表。
+python -m mmdeepspatial.euclidean --compare outputs/euclidean_v1
+```
+
+`comparison/` 保存 `all_runs.csv`、`all_cell_types.csv`、`seed_averaged_by_fold.csv`、`fold_mean_std.csv`、`paired_deltas.csv`。比较核对六组完整 seed/split、输入、预处理、当前源码、A2–A5 参数量和 A4/A5 图完全一致。预定义差值为 A1−A0、A2−A0、A3−A2、A4−A2、A5−A4、A5−A3。
+
+主指标仍为训练丰度 ≤5% 的全部稀有类；新增 `ultra_rare_*`（<1%）及 `low_rare_*`（1%–5%），不剔除极小样本类型。所有组同时报告常见类保护指标、逐类数量和 Precision/Recall/F1/AP。切片间标准差仅为描述统计，seed 不能代替独立生物学重复；本套已反复查看的切片仍是开发集。

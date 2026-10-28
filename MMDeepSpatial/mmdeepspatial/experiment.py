@@ -16,6 +16,7 @@ import joblib
 import numpy as np
 import pandas as pd
 from sklearn.decomposition import PCA
+from sklearn.preprocessing import FunctionTransformer
 import torch
 
 from .data import Preprocessor, cell_metadata, input_paths, read_slice
@@ -289,21 +290,33 @@ def load_encoder(folder, device="cpu"):
     folder = Path(folder)
     manifest = json.loads((folder/"manifest.json").read_text())
     prep = Preprocessor.load(folder/"preprocessing.npz")
-    if manifest["method"] == "pca":
-        model = joblib.load(folder/"pca.joblib")
+    if manifest["method"] in {"pca", "raw"}:
+        model = joblib.load(folder/f"{manifest['method']}.joblib")
     else:
         checkpoint = torch.load(folder/"encoder.pt", map_location="cpu", weights_only=True)
-        model = ExpressionAE(**{k: checkpoint[k] for k in ("n_genes", "dim", "hidden", "arm", "curvature")},
-                             max_tangent_radius=checkpoint.get("max_tangent_radius"))
+        model_class = ExpressionAE
+        if checkpoint.get("encoder_kind") == "gcn":
+            from .graph import InductiveGCNAE
+            model_class = InductiveGCNAE
+        model = model_class(**{k: checkpoint[k] for k in ("n_genes", "dim", "hidden", "arm", "curvature")},
+                            max_tangent_radius=checkpoint.get("max_tangent_radius"))
         model.load_state_dict(checkpoint["state_dict"])
         model = model.to(device).eval()
+        if checkpoint.get("encoder_kind") == "gcn":
+            with np.load(folder/"graph_reference.npz", allow_pickle=False) as reference:
+                model.bind_reference(reference["x"], reference["neighbors"])
     geometry = Geometry(**json.loads((folder/"geometry.json").read_text()))
     return model, prep, geometry
 
 
 def encode_adata(adata, model, prep, device="cpu"):
     x = prep.apply(adata)
-    return model.transform(x).astype("float32") if isinstance(model, PCA) else encode(model, x, torch.device(device))
+    if isinstance(model, (PCA, FunctionTransformer)):
+        return model.transform(x).astype("float32")
+    from .graph import InductiveGCNAE
+    if isinstance(model, InductiveGCNAE):
+        return model.encode_queries(x, torch.device(device))
+    return encode(model, x, torch.device(device))
 
 
 if __name__ == "__main__":
