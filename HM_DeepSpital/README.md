@@ -139,6 +139,8 @@ result = restored.reconstruct_full_volume(
 
 入口为 `examples/run_v2_spatial.ipynb` 或 `python HM_DeepSpital/examples/run_v2_spatial.py`。默认留出 1、2、3，读取已完成的 G zero；不重新训练、不计算隐藏切片条件，只替换生成 XY，冻结表达、类别、数量、来源及目标深度。物理半径、成本、UOT 参数继承原 G 配置。
 
+每折必需输入仅为 `SOURCE_ROOT/holdout_i/zero/run_config.json` 与 `generated.h5ad`，以及原可见切片数据。G 的 `shared`、训练日志和训练检查点不是 V2 的运行依赖；`model/model.ckpt` 存在时仅记录其哈希，不存在时明确记录未提供。Notebook 先检查三折冻结结果的身份、来源调度和预算。若换服务器后结果尚未同步，请复制三折 zero 子目录或把 `SOURCE_ROOT` 改为已有 G 结果的根目录，无需重跑 G。同步更新脚本后须重启 Notebook 内核再运行，避免继续调用旧函数。
+
 每折默认输出三个条件：`source_xy` 保留来源坐标但使用同一份 G zero 表达，作为位置对照；`ot_barycentric` 使用局部 UOT 条件重心作目标；`ot_sampled` 按条件 UOT 质量为每个来源抽取一个目标，同一来源的多个目标深度沿用同一路径。前向使用 t、反向使用 1−t 插值；没有正质量候选的来源保持原位置并标记 `source_anchor`。
 
 结果保存至新目录 `outputs/v2_spatial_holdouts_1_2_3/holdout_i/{source_xy,ot_barycentric,ot_sampled}/`，每组包含生成 H5AD、配置、预算与位移统计；shared 保存稀疏运输矩阵和匹配诊断。原 G zero 文件不改写，已有输出不覆盖。`spatial_before_v2` 保存原 G zero 坐标；`v1_generation_mode` 保存原推理方式；`v2_target_cell_index=-1` 表示使用重心/来源XY，或没有可采样目标，应结合 `match_status` 判断。

@@ -18,8 +18,50 @@ import pandas as pd
 from scipy import sparse
 from deepspatial.data_utils.local_matching import compute_local_uot
 from deepspatial.data_utils.spatial_transport import spatial_transport_volume
-from examples.resume_g import inspect_results, verify_schedule
+from examples.resume_g import verify_schedule
 from examples.run_s import file_sha256
+
+
+def inspect_sources(source_root=PROJECT / 'outputs/g_holdouts_1_2_3', holdouts=(1, 2, 3)):
+    """检查实际使用的冻结输出；不依赖 G 续训的 shared、训练检查点或日志。"""
+    source_root = Path(source_root).resolve()
+    missing = [source_root / f'holdout_{fold}/zero' / name
+               for fold in holdouts for name in ('run_config.json', 'generated.h5ad')
+               if not (source_root / f'holdout_{fold}/zero' / name).is_file()]
+    if missing:
+        files = '\n'.join(f'  {path}' for path in missing)
+        raise FileNotFoundError(
+            f'V2 找不到 G zero 输入文件：\n{files}\n'
+            'SOURCE_ROOT 应指向包含 holdout_1/zero、holdout_2/zero、holdout_3/zero 的 G 结果根目录。'
+            '请修改 SOURCE_ROOT 为服务器实际结果路径，或同步这些 zero 子目录；无需重跑 G。')
+    rows = []
+    for fold in holdouts:
+        source = source_root / f'holdout_{fold}/zero'
+        config = json.loads((source / 'run_config.json').read_text(encoding='utf-8-sig'))
+        experiment = config['experiment_g']
+        if (config['run']['heldout_indices'] != [fold] or config['data']['niche_config']['mode'] != 'zero'
+                or experiment.get('niche_mode') != 'zero' or experiment.get('heldout_id') != fold):
+            raise ValueError(f'Input must be the correct G zero fold: {source}')
+        expected = experiment['source_schedule_sha256']
+        if experiment.get('generated_schedule_sha256') != expected:
+            raise ValueError(f'G zero result has no completed schedule identity: {source}')
+        backed = ad.read_h5ad(source / 'generated.h5ad', backed='r')
+        try:
+            verify_schedule(backed.obs, config['data']['z_key'], expected)
+            embedded = backed.uns['experiment_g']
+            if (embedded.get('generated_schedule_sha256') != expected or embedded.get('niche_mode') != 'zero'
+                    or embedded.get('heldout_id') != fold):
+                raise ValueError(f'H5AD identity differs from run_config.json: {source}')
+            if (not backed.n_obs or backed.obs.is_observed.any()
+                    or config['slice_z_um'][fold] in set(backed.obs.source_z)
+                    or int(backed.uns['depth_type_sampling']['budget'].allocated_n.sum()) != backed.n_obs):
+                raise ValueError(f'Frozen G zero output has invalid counts or observed/held-out sources: {source}')
+            rows.append(dict(holdout=fold, mode='zero', generated_cells=backed.n_obs,
+                             status='ready', source=str(source),
+                             model_file_available=(source / 'model/model.ckpt').is_file()))
+        finally:
+            backed.file.close()
+    return pd.DataFrame(rows)
 
 
 def run_experiment(source_root=PROJECT / 'outputs/g_holdouts_1_2_3',
@@ -34,13 +76,12 @@ def run_experiment(source_root=PROJECT / 'outputs/g_holdouts_1_2_3',
     for fold in holdouts:
         if (output_root / f'holdout_{fold}').exists():
             raise FileExistsError('Output exists; select a new output root.')
-    status = inspect_results(source_root, holdouts, ('zero',))
-    if not (status.action == 'skip').all():
-        raise ValueError('Complete G zero checkpoints and generated volumes are required.')
+    status = inspect_sources(source_root, holdouts)
+    print(status.to_string(index=False), flush=True)
     completed = []
     for fold in holdouts:
         source = source_root / f'holdout_{fold}/zero'
-        config = json.loads((source / 'run_config.json').read_text(encoding='utf-8'))
+        config = json.loads((source / 'run_config.json').read_text(encoding='utf-8-sig'))
         if config['run']['heldout_indices'] != [fold] or config['data']['niche_config']['mode'] != 'zero':
             raise ValueError('Input must be the correct frozen G zero fold.')
         paths = sorted((Path(p) for p in glob.glob(str(PROJECT / config['input_glob']), recursive=True)),
@@ -79,7 +120,9 @@ def run_experiment(source_root=PROJECT / 'outputs/g_holdouts_1_2_3',
                                                      cell_class=a.obs[data['label_key']].astype(str).to_numpy(), **support[side])))
         pd.concat(diagnostics, ignore_index=True).to_csv(shared / 'matching_support.csv', index=False)
         provenance = dict(source='G zero frozen output', source_h5ad_sha256=file_sha256(source / 'generated.h5ad'),
-                          source_model_sha256=file_sha256(source / 'model/model.ckpt'), training_performed=False,
+                          source_model_sha256=file_sha256(source / 'model/model.ckpt') if (source / 'model/model.ckpt').is_file() else '',
+                          source_model_available=(source / 'model/model.ckpt').is_file(), training_performed=False,
+                          source_validation='frozen_output_identity_schedule_and_counts; model weights not used',
                           modified_fields='XY and spatial provenance only; expression/type/depth/schedule frozen',
                           target_sampling_seed=int(seed), evaluation_rare_threshold=.05,
                           experimental_status='spatial mechanism candidate; no performance claim',

@@ -17,7 +17,7 @@ from scipy import sparse
 from deepspatial.data_utils.spatial_transport import spatial_transport_volume
 from deepspatial.data_utils.sampling import depth_type_source_schedule
 from examples.run_g import schedule_sha256
-from examples.run_v2_spatial import run_experiment
+from examples.run_v2_spatial import inspect_sources, run_experiment
 from test_pipeline import slices
 
 
@@ -56,7 +56,7 @@ class SpatialV2Tests(unittest.TestCase):
             spatial_transport_volume(base, observed, [sparse.eye(3, 2)], 'ot_sampled')
 
     def test_runner_frozen_input_and_hidden_file_exclusion(self):
-        # Frozen G precondition is mocked; this fixture tests only the newly connected spatial path.
+        # Minimal frozen-output fixture: no shared, model, checkpoints, logs or S directory.
         with tempfile.TemporaryDirectory(dir=PROJECT) as temp:
             root = Path(temp)
             data = root / 'data'
@@ -93,18 +93,20 @@ class SpatialV2Tests(unittest.TestCase):
             config = json.loads((PROJECT / 'configs/merfish_g.json').read_text())
             config.update(input_glob=str(data / 'merfish_[0-4].h5ad'), run=dict(heldout_indices=[2], visible_files=[f'merfish_{i}.h5ad' for i in [0, 1, 3, 4]]))
             config['data']['niche_config']['mode'] = 'zero'
-            config['experiment_g'] = dict(source_schedule_sha256=schedule_sha256(base.obs, 'z_coord'))
+            digest = schedule_sha256(base.obs, 'z_coord')
+            config['experiment_g'] = dict(source_schedule_sha256=digest, generated_schedule_sha256=digest,
+                                         niche_mode='zero', heldout_id=2)
+            base.uns['experiment_g'] = copy.deepcopy(config['experiment_g'])
             source = root / 'G/holdout_2/zero'
-            (source / 'model').mkdir(parents=True)
-            (source / 'model/model.ckpt').write_bytes(b'engineering-fixture-identity')
+            source.mkdir(parents=True)
             (source / 'run_config.json').write_text(json.dumps(config), encoding='utf-8')
             base.write_h5ad(source / 'generated.h5ad')
             real_read = ad.read_h5ad
             def read_visible(path, *args, **kwargs):
                 self.assertNotEqual(Path(path).name, 'merfish_2.h5ad')
                 return real_read(path, *args, **kwargs)
-            with patch('examples.run_v2_spatial.inspect_results', return_value=pd.DataFrame({'action': ['skip']})), \
-                    patch('examples.run_v2_spatial.ad.read_h5ad', side_effect=read_visible):
+            with patch('examples.run_v2_spatial.ad.read_h5ad', side_effect=read_visible):
+                self.assertEqual(inspect_sources(root / 'G', (2,)).status.iloc[0], 'ready')
                 completed = run_experiment(root / 'G', root / 'V2', holdouts=(2,))
             self.assertEqual(len(completed), 3)
             for item in completed:
@@ -112,6 +114,11 @@ class SpatialV2Tests(unittest.TestCase):
                 np.testing.assert_array_equal(result.X, base.X)
                 self.assertEqual(schedule_sha256(result.obs, 'z_coord'), config['experiment_g']['source_schedule_sha256'])
                 self.assertFalse(result.uns['experiment_v2_spatial']['training_performed'])
+                self.assertFalse(result.uns['experiment_v2_spatial']['source_model_available'])
+            (source / 'generated.h5ad').unlink()
+            with self.assertRaisesRegex(FileNotFoundError, 'SOURCE_ROOT'):
+                run_experiment(root / 'G', root / 'missing_output', holdouts=(2,))
+            self.assertFalse((root / 'missing_output').exists())
 
 
 if __name__ == '__main__':
