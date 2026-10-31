@@ -1,0 +1,30 @@
+{
+  "input_glob": "../data/merfish_mouse_hypothalamus/**/merfish_[0-4].h5ad",
+  "slice_z_um": [0, 50, 100, 150, 200],
+  "data": {"spatial_key": "spatial", "z_key": "z_coord", "label_key": "cell_class"},
+  "pairing": {
+    "n_samples": 50000, "alpha_spatial": 0.5, "uot_reg": 0.05, "uot_tau": 0.05,
+    "local": {"max_distance_um": 300.0, "spatial_scale_um": 150.0, "reference_gap_um": 100.0}
+  },
+  "niche": {"radius_um": 50.0, "sigma_um": 25.0},
+  "model": {"patch_size": 8, "hidden_size": 256, "depth": 6, "num_heads": 8, "mlp_ratio": 4.0},
+  "residual": {"hidden_size": 128},
+  "A": {"kappa": 0.5, "balanced_risk": 0.2, "weight_cap": 10.0},
+  "trust": {
+    "common_gate": 0.25,
+    "max_rms": {"x": 0.05, "g": 0.1, "c": 0.05},
+    "anchor_lambda": {"x": 1.0, "g": 1.0, "c": 1.0},
+    "anchor_dt": 0.05
+  },
+  "training": {
+    "epochs": 100, "batch_size": 512, "num_workers": 0,
+    "lr": 0.0002, "weight_decay": 0.00001, "ema_decay": 0.999,
+    "lambda_g": 0.1, "lambda_c": 10.0
+  },
+  "reconstruction": {
+    "thickness_um": 10.0, "slab_width_um": 10.0, "grid_origin_um": 0.0,
+    "steps": 100, "chunk_size": 512, "solver": "dopri5", "atol": 0.00001, "rtol": 0.00001,
+    "sparsify": true
+  },
+  "evaluation": {"rare_fraction": 0.05, "radii_um": [25, 50, 100], "spatial_bin_um": 50.0}
+}

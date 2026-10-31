@@ -1,0 +1,30 @@
+{
+  "git_commit": "09e17a92972ae3938f5fd7f905c7b4401e388325",
+  "note": "Unmodified snapshots; original DeepSpatial MIT attribution retained.",
+  "sources": [
+    {
+      "source": "deepspatial/models/git.py",
+      "sha256": "27a6ec5f78ccdeaae4d8453b32b9f37b7947c318ea1495aafd136626c942fbf8"
+    },
+    {
+      "source": "deepspatial/models/commons.py",
+      "sha256": "e44aad9fa1b96aad6b547f4944b5c95f996e2ff04ef5a9bac56a051cfbfcbd85"
+    },
+    {
+      "source": "deepspatial/data_utils/uot_solver.py",
+      "sha256": "e34818a64d8fcf5f244015e6bd1c7e4b728f4b907f87b3894d34ba0a881e4556"
+    },
+    {
+      "source": "HM_DeepSpital/deepspatial/data_utils/local_matching.py",
+      "sha256": "1ad04ade46e90c13a3535ea8065f54ac2e9b33083b8463dfba1560829008ddd7"
+    },
+    {
+      "source": "HM_DeepSpital/deepspatial/data_utils/sampling.py",
+      "sha256": "861d2ea241e6132a761e2fa39299952e35ab0cda4d004f83e6baa2fb9327b5e6"
+    },
+    {
+      "source": "HM_DeepSpital/deepspatial/bio_prior/niche.py",
+      "sha256": "b3baa5a207685e0392dc42a439810a7f3b3b344f2c1e02d65d2729f744474e8d"
+    }
+  ]
+}
