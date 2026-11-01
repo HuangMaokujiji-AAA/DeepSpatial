@@ -1,0 +1,316 @@
+heldout,arm,cell_class,generated_n,source_anchor_n
+1,baseline,Astrocyte,688,0
+1,baseline,Endothelial 1,316,0
+1,baseline,Endothelial 2,32,0
+1,baseline,Endothelial 3,101,0
+1,baseline,Ependymal,287,0
+1,baseline,Excitatory,1124,0
+1,baseline,Inhibitory,2495,0
+1,baseline,Microglia,150,0
+1,baseline,OD Immature 1,211,0
+1,baseline,OD Immature 2,8,0
+1,baseline,OD Mature 1,66,0
+1,baseline,OD Mature 2,228,0
+1,baseline,OD Mature 3,0,0
+1,baseline,OD Mature 4,7,0
+1,baseline,Pericytes,26,0
+1,control,Astrocyte,683,0
+1,control,Endothelial 1,303,0
+1,control,Endothelial 2,29,5
+1,control,Endothelial 3,112,0
+1,control,Ependymal,265,0
+1,control,Excitatory,1143,0
+1,control,Inhibitory,2501,0
+1,control,Microglia,130,0
+1,control,OD Immature 1,205,0
+1,control,OD Immature 2,7,4
+1,control,OD Mature 1,57,8
+1,control,OD Mature 2,236,0
+1,control,OD Mature 3,1,1
+1,control,OD Mature 4,9,3
+1,control,Pericytes,26,8
+1,R0,Astrocyte,683,0
+1,R0,Endothelial 1,303,0
+1,R0,Endothelial 2,29,5
+1,R0,Endothelial 3,112,0
+1,R0,Ependymal,265,0
+1,R0,Excitatory,1143,0
+1,R0,Inhibitory,2501,0
+1,R0,Microglia,130,0
+1,R0,OD Immature 1,205,0
+1,R0,OD Immature 2,7,4
+1,R0,OD Mature 1,57,8
+1,R0,OD Mature 2,236,0
+1,R0,OD Mature 3,1,1
+1,R0,OD Mature 4,9,3
+1,R0,Pericytes,26,8
+1,A,Astrocyte,683,0
+1,A,Endothelial 1,303,0
+1,A,Endothelial 2,29,5
+1,A,Endothelial 3,112,0
+1,A,Ependymal,265,0
+1,A,Excitatory,1143,0
+1,A,Inhibitory,2501,0
+1,A,Microglia,130,0
+1,A,OD Immature 1,205,0
+1,A,OD Immature 2,7,4
+1,A,OD Mature 1,57,8
+1,A,OD Mature 2,236,0
+1,A,OD Mature 3,1,1
+1,A,OD Mature 4,9,3
+1,A,Pericytes,26,8
+1,B,Astrocyte,683,0
+1,B,Endothelial 1,303,0
+1,B,Endothelial 2,29,5
+1,B,Endothelial 3,112,0
+1,B,Ependymal,265,0
+1,B,Excitatory,1143,0
+1,B,Inhibitory,2501,0
+1,B,Microglia,130,0
+1,B,OD Immature 1,205,0
+1,B,OD Immature 2,7,4
+1,B,OD Mature 1,57,8
+1,B,OD Mature 2,236,0
+1,B,OD Mature 3,1,1
+1,B,OD Mature 4,9,3
+1,B,Pericytes,26,8
+1,AB,Astrocyte,683,0
+1,AB,Endothelial 1,303,0
+1,AB,Endothelial 2,29,5
+1,AB,Endothelial 3,112,0
+1,AB,Ependymal,265,0
+1,AB,Excitatory,1143,0
+1,AB,Inhibitory,2501,0
+1,AB,Microglia,130,0
+1,AB,OD Immature 1,205,0
+1,AB,OD Immature 2,7,4
+1,AB,OD Mature 1,57,8
+1,AB,OD Mature 2,236,0
+1,AB,OD Mature 3,1,1
+1,AB,OD Mature 4,9,3
+1,AB,Pericytes,26,8
+1,ABC,Astrocyte,683,0
+1,ABC,Endothelial 1,303,0
+1,ABC,Endothelial 2,29,5
+1,ABC,Endothelial 3,112,0
+1,ABC,Ependymal,265,0
+1,ABC,Excitatory,1143,0
+1,ABC,Inhibitory,2501,0
+1,ABC,Microglia,130,0
+1,ABC,OD Immature 1,205,0
+1,ABC,OD Immature 2,7,4
+1,ABC,OD Mature 1,57,8
+1,ABC,OD Mature 2,236,0
+1,ABC,OD Mature 3,1,1
+1,ABC,OD Mature 4,9,3
+1,ABC,Pericytes,26,8
+2,baseline,Astrocyte,666,0
+2,baseline,Endothelial 1,260,0
+2,baseline,Endothelial 2,37,0
+2,baseline,Endothelial 3,125,0
+2,baseline,Ependymal,282,0
+2,baseline,Excitatory,1121,0
+2,baseline,Inhibitory,2570,0
+2,baseline,Microglia,112,0
+2,baseline,OD Immature 1,206,0
+2,baseline,OD Immature 2,5,0
+2,baseline,OD Mature 1,47,0
+2,baseline,OD Mature 2,237,0
+2,baseline,OD Mature 3,2,0
+2,baseline,OD Mature 4,11,0
+2,baseline,Pericytes,42,0
+2,control,Astrocyte,649,0
+2,control,Endothelial 1,287,0
+2,control,Endothelial 2,34,3
+2,control,Endothelial 3,105,0
+2,control,Ependymal,270,0
+2,control,Excitatory,1140,0
+2,control,Inhibitory,2568,0
+2,control,Microglia,115,0
+2,control,OD Immature 1,190,0
+2,control,OD Immature 2,6,4
+2,control,OD Mature 1,38,2
+2,control,OD Mature 2,221,0
+2,control,OD Mature 3,3,3
+2,control,OD Mature 4,9,5
+2,control,Pericytes,45,8
+2,R0,Astrocyte,649,0
+2,R0,Endothelial 1,287,0
+2,R0,Endothelial 2,34,3
+2,R0,Endothelial 3,105,0
+2,R0,Ependymal,270,0
+2,R0,Excitatory,1140,0
+2,R0,Inhibitory,2568,0
+2,R0,Microglia,115,0
+2,R0,OD Immature 1,190,0
+2,R0,OD Immature 2,6,4
+2,R0,OD Mature 1,38,2
+2,R0,OD Mature 2,221,0
+2,R0,OD Mature 3,3,3
+2,R0,OD Mature 4,9,5
+2,R0,Pericytes,45,8
+2,A,Astrocyte,649,0
+2,A,Endothelial 1,287,0
+2,A,Endothelial 2,34,3
+2,A,Endothelial 3,105,0
+2,A,Ependymal,270,0
+2,A,Excitatory,1140,0
+2,A,Inhibitory,2568,0
+2,A,Microglia,115,0
+2,A,OD Immature 1,190,0
+2,A,OD Immature 2,6,4
+2,A,OD Mature 1,38,2
+2,A,OD Mature 2,221,0
+2,A,OD Mature 3,3,3
+2,A,OD Mature 4,9,5
+2,A,Pericytes,45,8
+2,B,Astrocyte,649,0
+2,B,Endothelial 1,287,0
+2,B,Endothelial 2,34,3
+2,B,Endothelial 3,105,0
+2,B,Ependymal,270,0
+2,B,Excitatory,1140,0
+2,B,Inhibitory,2568,0
+2,B,Microglia,115,0
+2,B,OD Immature 1,190,0
+2,B,OD Immature 2,6,4
+2,B,OD Mature 1,38,2
+2,B,OD Mature 2,221,0
+2,B,OD Mature 3,3,3
+2,B,OD Mature 4,9,5
+2,B,Pericytes,45,8
+2,AB,Astrocyte,649,0
+2,AB,Endothelial 1,287,0
+2,AB,Endothelial 2,34,3
+2,AB,Endothelial 3,105,0
+2,AB,Ependymal,270,0
+2,AB,Excitatory,1140,0
+2,AB,Inhibitory,2568,0
+2,AB,Microglia,115,0
+2,AB,OD Immature 1,190,0
+2,AB,OD Immature 2,6,4
+2,AB,OD Mature 1,38,2
+2,AB,OD Mature 2,221,0
+2,AB,OD Mature 3,3,3
+2,AB,OD Mature 4,9,5
+2,AB,Pericytes,45,8
+2,ABC,Astrocyte,649,0
+2,ABC,Endothelial 1,287,0
+2,ABC,Endothelial 2,34,3
+2,ABC,Endothelial 3,105,0
+2,ABC,Ependymal,270,0
+2,ABC,Excitatory,1140,0
+2,ABC,Inhibitory,2568,0
+2,ABC,Microglia,115,0
+2,ABC,OD Immature 1,190,0
+2,ABC,OD Immature 2,6,4
+2,ABC,OD Mature 1,38,2
+2,ABC,OD Mature 2,221,0
+2,ABC,OD Mature 3,3,3
+2,ABC,OD Mature 4,9,5
+2,ABC,Pericytes,45,8
+3,baseline,Astrocyte,730,0
+3,baseline,Endothelial 1,280,0
+3,baseline,Endothelial 2,13,0
+3,baseline,Endothelial 3,104,0
+3,baseline,Ependymal,233,0
+3,baseline,Excitatory,1267,0
+3,baseline,Inhibitory,2479,0
+3,baseline,Microglia,133,0
+3,baseline,OD Immature 1,219,0
+3,baseline,OD Immature 2,5,0
+3,baseline,OD Mature 1,50,0
+3,baseline,OD Mature 2,212,0
+3,baseline,OD Mature 3,2,0
+3,baseline,OD Mature 4,7,0
+3,baseline,Pericytes,48,0
+3,control,Astrocyte,708,0
+3,control,Endothelial 1,296,0
+3,control,Endothelial 2,18,5
+3,control,Endothelial 3,113,0
+3,control,Ependymal,245,0
+3,control,Excitatory,1217,0
+3,control,Inhibitory,2469,0
+3,control,Microglia,123,0
+3,control,OD Immature 1,205,0
+3,control,OD Immature 2,6,5
+3,control,OD Mature 1,46,2
+3,control,OD Mature 2,230,0
+3,control,OD Mature 3,4,3
+3,control,OD Mature 4,11,2
+3,control,Pericytes,44,11
+3,R0,Astrocyte,708,0
+3,R0,Endothelial 1,296,0
+3,R0,Endothelial 2,18,5
+3,R0,Endothelial 3,113,0
+3,R0,Ependymal,245,0
+3,R0,Excitatory,1217,0
+3,R0,Inhibitory,2469,0
+3,R0,Microglia,123,0
+3,R0,OD Immature 1,205,0
+3,R0,OD Immature 2,6,5
+3,R0,OD Mature 1,46,2
+3,R0,OD Mature 2,230,0
+3,R0,OD Mature 3,4,3
+3,R0,OD Mature 4,11,2
+3,R0,Pericytes,44,11
+3,A,Astrocyte,708,0
+3,A,Endothelial 1,296,0
+3,A,Endothelial 2,18,5
+3,A,Endothelial 3,113,0
+3,A,Ependymal,245,0
+3,A,Excitatory,1217,0
+3,A,Inhibitory,2469,0
+3,A,Microglia,123,0
+3,A,OD Immature 1,205,0
+3,A,OD Immature 2,6,5
+3,A,OD Mature 1,46,2
+3,A,OD Mature 2,230,0
+3,A,OD Mature 3,4,3
+3,A,OD Mature 4,11,2
+3,A,Pericytes,44,11
+3,B,Astrocyte,708,0
+3,B,Endothelial 1,296,0
+3,B,Endothelial 2,18,5
+3,B,Endothelial 3,113,0
+3,B,Ependymal,245,0
+3,B,Excitatory,1217,0
+3,B,Inhibitory,2469,0
+3,B,Microglia,123,0
+3,B,OD Immature 1,205,0
+3,B,OD Immature 2,6,5
+3,B,OD Mature 1,46,2
+3,B,OD Mature 2,230,0
+3,B,OD Mature 3,4,3
+3,B,OD Mature 4,11,2
+3,B,Pericytes,44,11
+3,AB,Astrocyte,708,0
+3,AB,Endothelial 1,296,0
+3,AB,Endothelial 2,18,5
+3,AB,Endothelial 3,113,0
+3,AB,Ependymal,245,0
+3,AB,Excitatory,1217,0
+3,AB,Inhibitory,2469,0
+3,AB,Microglia,123,0
+3,AB,OD Immature 1,205,0
+3,AB,OD Immature 2,6,5
+3,AB,OD Mature 1,46,2
+3,AB,OD Mature 2,230,0
+3,AB,OD Mature 3,4,3
+3,AB,OD Mature 4,11,2
+3,AB,Pericytes,44,11
+3,ABC,Astrocyte,708,0
+3,ABC,Endothelial 1,296,0
+3,ABC,Endothelial 2,18,5
+3,ABC,Endothelial 3,113,0
+3,ABC,Ependymal,245,0
+3,ABC,Excitatory,1217,0
+3,ABC,Inhibitory,2469,0
+3,ABC,Microglia,123,0
+3,ABC,OD Immature 1,205,0
+3,ABC,OD Immature 2,6,5
+3,ABC,OD Mature 1,46,2
+3,ABC,OD Mature 2,230,0
+3,ABC,OD Mature 3,4,3
+3,ABC,OD Mature 4,11,2
+3,ABC,Pericytes,44,11

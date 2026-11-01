@@ -1,0 +1,19 @@
+{
+  "input_glob": "../data/merfish_mouse_hypothalamus/**/merfish_[0-4].h5ad",
+  "slice_z_um": [0, 50, 100, 150, 200],
+  "data": {"spatial_key": "spatial", "z_key": "z_coord", "label_key": "cell_class"},
+  "spatial": {
+    "bin_um": 25.0, "smooth_sigma_bins": 1.0, "intensity_floor": 0.0001,
+    "max_grid_cells": 300000, "max_log_ratio": 2.0, "residual_penalty": 0.02
+  },
+  "neighborhood": {"neighbors": 32, "radius_um": 150.0, "sigma_xy_um": 75.0},
+  "type": {"balanced_risk": 0.0, "weight_cap": 5.0},
+  "expression": {"presence_weight": 0.1, "positive_weight": 0.1},
+  "git": {"patch_size": 8, "hidden_size": 256, "depth": 6, "num_heads": 8, "mlp_ratio": 4.0},
+  "training": {
+    "epochs": {"spatial": 30, "type": 30, "expression": 40},
+    "width": 128, "batch_size": 512, "lr": 0.001, "weight_decay": 0.00001
+  },
+  "reconstruction": {"slab_width_um": 10.0},
+  "evaluation": {"rare_fraction": 0.05, "radii_um": [25, 50, 100], "spatial_bin_um": 50.0}
+}

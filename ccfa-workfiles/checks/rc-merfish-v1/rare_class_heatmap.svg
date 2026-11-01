@@ -1,0 +1,179 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="850" viewBox="0 0 1100 850">
+<style>text{font-family:Times New Roman, Times, Noto Serif CJK SC, Source Han Serif SC, SimSun, serif;dominant-baseline:auto} .mono{font-family:Consolas, Menlo, monospace}</style>
+<rect x="0" y="0" width="1100" height="850" rx="0" fill="#FBFCFE"/>
+<text x="42.00" y="52.00" font-size="28" font-weight="820" fill="#17212B" text-anchor="start">Rare-cell spatial F1 at 50 um (%)</text>
+<text x="42.00" y="82.00" font-size="14" font-weight="520" fill="#5D6977" text-anchor="start">Mean over 3 holdouts; source label view; includes zero-recovery classes</text>
+<text x="42.00" y="826.00" font-size="11" font-weight="500" fill="#5D6977" text-anchor="start">Rare is defined from visible training abundance &lt;= 5%.</text>
+<text x="250.71" y="114.00" font-size="12" font-weight="720" fill="#5D6977" text-anchor="middle">baseline</text>
+<text x="372.14" y="114.00" font-size="12" font-weight="720" fill="#5D6977" text-anchor="middle">control</text>
+<text x="493.57" y="114.00" font-size="12" font-weight="720" fill="#5D6977" text-anchor="middle">R0</text>
+<text x="615.00" y="114.00" font-size="12" font-weight="720" fill="#5D6977" text-anchor="middle">A</text>
+<text x="736.43" y="114.00" font-size="12" font-weight="720" fill="#5D6977" text-anchor="middle">B</text>
+<text x="857.86" y="114.00" font-size="12" font-weight="720" fill="#5D6977" text-anchor="middle">AB</text>
+<text x="979.29" y="114.00" font-size="12" font-weight="720" fill="#5D6977" text-anchor="middle">ABC</text>
+<text x="172.00" y="165.00" font-size="12" font-weight="650" fill="#17212B" text-anchor="end">Endothelial 2</text>
+<rect x="193.00" y="135.00" width="115.43" height="50.00" rx="10.00" fill="#DEEBF7" stroke="#FFFFFF" opacity="1.000"/>
+<text x="250.71" y="165.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">8.1</text>
+<rect x="314.43" y="135.00" width="115.43" height="50.00" rx="10.00" fill="#DEEBF7" stroke="#FFFFFF" opacity="1.000"/>
+<text x="372.14" y="165.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">14.1</text>
+<rect x="435.86" y="135.00" width="115.43" height="50.00" rx="10.00" fill="#DEEBF7" stroke="#FFFFFF" opacity="1.000"/>
+<text x="493.57" y="165.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">14.1</text>
+<rect x="557.29" y="135.00" width="115.43" height="50.00" rx="10.00" fill="#DEEBF7" stroke="#FFFFFF" opacity="1.000"/>
+<text x="615.00" y="165.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">14.1</text>
+<rect x="678.71" y="135.00" width="115.43" height="50.00" rx="10.00" fill="#DEEBF7" stroke="#FFFFFF" opacity="1.000"/>
+<text x="736.43" y="165.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">14.1</text>
+<rect x="800.14" y="135.00" width="115.43" height="50.00" rx="10.00" fill="#DEEBF7" stroke="#FFFFFF" opacity="1.000"/>
+<text x="857.86" y="165.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">13.2</text>
+<rect x="921.57" y="135.00" width="115.43" height="50.00" rx="10.00" fill="#DEEBF7" stroke="#FFFFFF" opacity="1.000"/>
+<text x="979.29" y="165.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">12.2</text>
+<text x="172.00" y="221.00" font-size="12" font-weight="650" fill="#17212B" text-anchor="end">Endothelial 3</text>
+<rect x="193.00" y="191.00" width="115.43" height="50.00" rx="10.00" fill="#DEEBF7" stroke="#FFFFFF" opacity="1.000"/>
+<text x="250.71" y="221.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">14.4</text>
+<rect x="314.43" y="191.00" width="115.43" height="50.00" rx="10.00" fill="#DEEBF7" stroke="#FFFFFF" opacity="1.000"/>
+<text x="372.14" y="221.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">19.7</text>
+<rect x="435.86" y="191.00" width="115.43" height="50.00" rx="10.00" fill="#DEEBF7" stroke="#FFFFFF" opacity="1.000"/>
+<text x="493.57" y="221.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">19.7</text>
+<rect x="557.29" y="191.00" width="115.43" height="50.00" rx="10.00" fill="#DEEBF7" stroke="#FFFFFF" opacity="1.000"/>
+<text x="615.00" y="221.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">19.1</text>
+<rect x="678.71" y="191.00" width="115.43" height="50.00" rx="10.00" fill="#DEEBF7" stroke="#FFFFFF" opacity="1.000"/>
+<text x="736.43" y="221.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">19.4</text>
+<rect x="800.14" y="191.00" width="115.43" height="50.00" rx="10.00" fill="#DEEBF7" stroke="#FFFFFF" opacity="1.000"/>
+<text x="857.86" y="221.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">20.0</text>
+<rect x="921.57" y="191.00" width="115.43" height="50.00" rx="10.00" fill="#DEEBF7" stroke="#FFFFFF" opacity="1.000"/>
+<text x="979.29" y="221.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">21.6</text>
+<text x="172.00" y="277.00" font-size="12" font-weight="650" fill="#17212B" text-anchor="end">Ependymal</text>
+<rect x="193.00" y="247.00" width="115.43" height="50.00" rx="10.00" fill="#08519C" stroke="#FFFFFF" opacity="1.000"/>
+<text x="250.71" y="277.00" font-size="12" font-weight="760" fill="#FFFFFF" text-anchor="middle">86.1</text>
+<rect x="314.43" y="247.00" width="115.43" height="50.00" rx="10.00" fill="#08519C" stroke="#FFFFFF" opacity="1.000"/>
+<text x="372.14" y="277.00" font-size="12" font-weight="760" fill="#FFFFFF" text-anchor="middle">88.2</text>
+<rect x="435.86" y="247.00" width="115.43" height="50.00" rx="10.00" fill="#08519C" stroke="#FFFFFF" opacity="1.000"/>
+<text x="493.57" y="277.00" font-size="12" font-weight="760" fill="#FFFFFF" text-anchor="middle">87.9</text>
+<rect x="557.29" y="247.00" width="115.43" height="50.00" rx="10.00" fill="#08519C" stroke="#FFFFFF" opacity="1.000"/>
+<text x="615.00" y="277.00" font-size="12" font-weight="760" fill="#FFFFFF" text-anchor="middle">87.7</text>
+<rect x="678.71" y="247.00" width="115.43" height="50.00" rx="10.00" fill="#08519C" stroke="#FFFFFF" opacity="1.000"/>
+<text x="736.43" y="277.00" font-size="12" font-weight="760" fill="#FFFFFF" text-anchor="middle">88.2</text>
+<rect x="800.14" y="247.00" width="115.43" height="50.00" rx="10.00" fill="#08519C" stroke="#FFFFFF" opacity="1.000"/>
+<text x="857.86" y="277.00" font-size="12" font-weight="760" fill="#FFFFFF" text-anchor="middle">87.9</text>
+<rect x="921.57" y="247.00" width="115.43" height="50.00" rx="10.00" fill="#08519C" stroke="#FFFFFF" opacity="1.000"/>
+<text x="979.29" y="277.00" font-size="12" font-weight="760" fill="#FFFFFF" text-anchor="middle">87.6</text>
+<text x="172.00" y="333.00" font-size="12" font-weight="650" fill="#17212B" text-anchor="end">Microglia</text>
+<rect x="193.00" y="303.00" width="115.43" height="50.00" rx="10.00" fill="#DEEBF7" stroke="#FFFFFF" opacity="1.000"/>
+<text x="250.71" y="333.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">17.3</text>
+<rect x="314.43" y="303.00" width="115.43" height="50.00" rx="10.00" fill="#DEEBF7" stroke="#FFFFFF" opacity="1.000"/>
+<text x="372.14" y="333.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">14.9</text>
+<rect x="435.86" y="303.00" width="115.43" height="50.00" rx="10.00" fill="#DEEBF7" stroke="#FFFFFF" opacity="1.000"/>
+<text x="493.57" y="333.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">14.9</text>
+<rect x="557.29" y="303.00" width="115.43" height="50.00" rx="10.00" fill="#DEEBF7" stroke="#FFFFFF" opacity="1.000"/>
+<text x="615.00" y="333.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">14.6</text>
+<rect x="678.71" y="303.00" width="115.43" height="50.00" rx="10.00" fill="#DEEBF7" stroke="#FFFFFF" opacity="1.000"/>
+<text x="736.43" y="333.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">14.6</text>
+<rect x="800.14" y="303.00" width="115.43" height="50.00" rx="10.00" fill="#DEEBF7" stroke="#FFFFFF" opacity="1.000"/>
+<text x="857.86" y="333.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">14.6</text>
+<rect x="921.57" y="303.00" width="115.43" height="50.00" rx="10.00" fill="#DEEBF7" stroke="#FFFFFF" opacity="1.000"/>
+<text x="979.29" y="333.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">15.2</text>
+<text x="172.00" y="389.00" font-size="12" font-weight="650" fill="#17212B" text-anchor="end">OD Immature 1</text>
+<rect x="193.00" y="359.00" width="115.43" height="50.00" rx="10.00" fill="#C6DBEF" stroke="#FFFFFF" opacity="1.000"/>
+<text x="250.71" y="389.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">30.9</text>
+<rect x="314.43" y="359.00" width="115.43" height="50.00" rx="10.00" fill="#C6DBEF" stroke="#FFFFFF" opacity="1.000"/>
+<text x="372.14" y="389.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">31.3</text>
+<rect x="435.86" y="359.00" width="115.43" height="50.00" rx="10.00" fill="#C6DBEF" stroke="#FFFFFF" opacity="1.000"/>
+<text x="493.57" y="389.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">31.2</text>
+<rect x="557.29" y="359.00" width="115.43" height="50.00" rx="10.00" fill="#C6DBEF" stroke="#FFFFFF" opacity="1.000"/>
+<text x="615.00" y="389.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">30.1</text>
+<rect x="678.71" y="359.00" width="115.43" height="50.00" rx="10.00" fill="#C6DBEF" stroke="#FFFFFF" opacity="1.000"/>
+<text x="736.43" y="389.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">31.5</text>
+<rect x="800.14" y="359.00" width="115.43" height="50.00" rx="10.00" fill="#C6DBEF" stroke="#FFFFFF" opacity="1.000"/>
+<text x="857.86" y="389.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">31.2</text>
+<rect x="921.57" y="359.00" width="115.43" height="50.00" rx="10.00" fill="#C6DBEF" stroke="#FFFFFF" opacity="1.000"/>
+<text x="979.29" y="389.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">31.2</text>
+<text x="172.00" y="445.00" font-size="12" font-weight="650" fill="#17212B" text-anchor="end">OD Immature 2</text>
+<rect x="193.00" y="415.00" width="115.43" height="50.00" rx="10.00" fill="#F7FBFF" stroke="#FFFFFF" opacity="1.000"/>
+<text x="250.71" y="445.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">0</text>
+<rect x="314.43" y="415.00" width="115.43" height="50.00" rx="10.00" fill="#F7FBFF" stroke="#FFFFFF" opacity="1.000"/>
+<text x="372.14" y="445.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">0</text>
+<rect x="435.86" y="415.00" width="115.43" height="50.00" rx="10.00" fill="#F7FBFF" stroke="#FFFFFF" opacity="1.000"/>
+<text x="493.57" y="445.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">0</text>
+<rect x="557.29" y="415.00" width="115.43" height="50.00" rx="10.00" fill="#F7FBFF" stroke="#FFFFFF" opacity="1.000"/>
+<text x="615.00" y="445.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">0</text>
+<rect x="678.71" y="415.00" width="115.43" height="50.00" rx="10.00" fill="#F7FBFF" stroke="#FFFFFF" opacity="1.000"/>
+<text x="736.43" y="445.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">0</text>
+<rect x="800.14" y="415.00" width="115.43" height="50.00" rx="10.00" fill="#F7FBFF" stroke="#FFFFFF" opacity="1.000"/>
+<text x="857.86" y="445.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">0</text>
+<rect x="921.57" y="415.00" width="115.43" height="50.00" rx="10.00" fill="#F7FBFF" stroke="#FFFFFF" opacity="1.000"/>
+<text x="979.29" y="445.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">0</text>
+<text x="172.00" y="501.00" font-size="12" font-weight="650" fill="#17212B" text-anchor="end">OD Mature 1</text>
+<rect x="193.00" y="471.00" width="115.43" height="50.00" rx="10.00" fill="#DEEBF7" stroke="#FFFFFF" opacity="1.000"/>
+<text x="250.71" y="501.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">18.4</text>
+<rect x="314.43" y="471.00" width="115.43" height="50.00" rx="10.00" fill="#DEEBF7" stroke="#FFFFFF" opacity="1.000"/>
+<text x="372.14" y="501.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">18.5</text>
+<rect x="435.86" y="471.00" width="115.43" height="50.00" rx="10.00" fill="#DEEBF7" stroke="#FFFFFF" opacity="1.000"/>
+<text x="493.57" y="501.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">18.5</text>
+<rect x="557.29" y="471.00" width="115.43" height="50.00" rx="10.00" fill="#DEEBF7" stroke="#FFFFFF" opacity="1.000"/>
+<text x="615.00" y="501.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">19.3</text>
+<rect x="678.71" y="471.00" width="115.43" height="50.00" rx="10.00" fill="#DEEBF7" stroke="#FFFFFF" opacity="1.000"/>
+<text x="736.43" y="501.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">19.3</text>
+<rect x="800.14" y="471.00" width="115.43" height="50.00" rx="10.00" fill="#DEEBF7" stroke="#FFFFFF" opacity="1.000"/>
+<text x="857.86" y="501.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">18.5</text>
+<rect x="921.57" y="471.00" width="115.43" height="50.00" rx="10.00" fill="#DEEBF7" stroke="#FFFFFF" opacity="1.000"/>
+<text x="979.29" y="501.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">17.8</text>
+<text x="172.00" y="557.00" font-size="12" font-weight="650" fill="#17212B" text-anchor="end">OD Mature 2</text>
+<rect x="193.00" y="527.00" width="115.43" height="50.00" rx="10.00" fill="#9ECAE1" stroke="#FFFFFF" opacity="1.000"/>
+<text x="250.71" y="557.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">45.1</text>
+<rect x="314.43" y="527.00" width="115.43" height="50.00" rx="10.00" fill="#9ECAE1" stroke="#FFFFFF" opacity="1.000"/>
+<text x="372.14" y="557.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">47.2</text>
+<rect x="435.86" y="527.00" width="115.43" height="50.00" rx="10.00" fill="#9ECAE1" stroke="#FFFFFF" opacity="1.000"/>
+<text x="493.57" y="557.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">47.2</text>
+<rect x="557.29" y="527.00" width="115.43" height="50.00" rx="10.00" fill="#9ECAE1" stroke="#FFFFFF" opacity="1.000"/>
+<text x="615.00" y="557.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">46.9</text>
+<rect x="678.71" y="527.00" width="115.43" height="50.00" rx="10.00" fill="#9ECAE1" stroke="#FFFFFF" opacity="1.000"/>
+<text x="736.43" y="557.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">47.0</text>
+<rect x="800.14" y="527.00" width="115.43" height="50.00" rx="10.00" fill="#9ECAE1" stroke="#FFFFFF" opacity="1.000"/>
+<text x="857.86" y="557.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">47.3</text>
+<rect x="921.57" y="527.00" width="115.43" height="50.00" rx="10.00" fill="#9ECAE1" stroke="#FFFFFF" opacity="1.000"/>
+<text x="979.29" y="557.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">46.5</text>
+<text x="172.00" y="613.00" font-size="12" font-weight="650" fill="#17212B" text-anchor="end">OD Mature 3</text>
+<rect x="193.00" y="583.00" width="115.43" height="50.00" rx="10.00" fill="#F7FBFF" stroke="#FFFFFF" opacity="1.000"/>
+<text x="250.71" y="613.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">0</text>
+<rect x="314.43" y="583.00" width="115.43" height="50.00" rx="10.00" fill="#F7FBFF" stroke="#FFFFFF" opacity="1.000"/>
+<text x="372.14" y="613.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">0</text>
+<rect x="435.86" y="583.00" width="115.43" height="50.00" rx="10.00" fill="#F7FBFF" stroke="#FFFFFF" opacity="1.000"/>
+<text x="493.57" y="613.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">0</text>
+<rect x="557.29" y="583.00" width="115.43" height="50.00" rx="10.00" fill="#F7FBFF" stroke="#FFFFFF" opacity="1.000"/>
+<text x="615.00" y="613.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">0</text>
+<rect x="678.71" y="583.00" width="115.43" height="50.00" rx="10.00" fill="#F7FBFF" stroke="#FFFFFF" opacity="1.000"/>
+<text x="736.43" y="613.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">0</text>
+<rect x="800.14" y="583.00" width="115.43" height="50.00" rx="10.00" fill="#F7FBFF" stroke="#FFFFFF" opacity="1.000"/>
+<text x="857.86" y="613.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">0</text>
+<rect x="921.57" y="583.00" width="115.43" height="50.00" rx="10.00" fill="#F7FBFF" stroke="#FFFFFF" opacity="1.000"/>
+<text x="979.29" y="613.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">0</text>
+<text x="172.00" y="669.00" font-size="12" font-weight="650" fill="#17212B" text-anchor="end">OD Mature 4</text>
+<rect x="193.00" y="639.00" width="115.43" height="50.00" rx="10.00" fill="#F7FBFF" stroke="#FFFFFF" opacity="1.000"/>
+<text x="250.71" y="669.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">4.4</text>
+<rect x="314.43" y="639.00" width="115.43" height="50.00" rx="10.00" fill="#F7FBFF" stroke="#FFFFFF" opacity="1.000"/>
+<text x="372.14" y="669.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">3.5</text>
+<rect x="435.86" y="639.00" width="115.43" height="50.00" rx="10.00" fill="#F7FBFF" stroke="#FFFFFF" opacity="1.000"/>
+<text x="493.57" y="669.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">3.5</text>
+<rect x="557.29" y="639.00" width="115.43" height="50.00" rx="10.00" fill="#F7FBFF" stroke="#FFFFFF" opacity="1.000"/>
+<text x="615.00" y="669.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">3.5</text>
+<rect x="678.71" y="639.00" width="115.43" height="50.00" rx="10.00" fill="#F7FBFF" stroke="#FFFFFF" opacity="1.000"/>
+<text x="736.43" y="669.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">3.5</text>
+<rect x="800.14" y="639.00" width="115.43" height="50.00" rx="10.00" fill="#F7FBFF" stroke="#FFFFFF" opacity="1.000"/>
+<text x="857.86" y="669.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">3.5</text>
+<rect x="921.57" y="639.00" width="115.43" height="50.00" rx="10.00" fill="#F7FBFF" stroke="#FFFFFF" opacity="1.000"/>
+<text x="979.29" y="669.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">3.5</text>
+<text x="172.00" y="725.00" font-size="12" font-weight="650" fill="#17212B" text-anchor="end">Pericytes</text>
+<rect x="193.00" y="695.00" width="115.43" height="50.00" rx="10.00" fill="#F7FBFF" stroke="#FFFFFF" opacity="1.000"/>
+<text x="250.71" y="725.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">3.7</text>
+<rect x="314.43" y="695.00" width="115.43" height="50.00" rx="10.00" fill="#DEEBF7" stroke="#FFFFFF" opacity="1.000"/>
+<text x="372.14" y="725.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">10.5</text>
+<rect x="435.86" y="695.00" width="115.43" height="50.00" rx="10.00" fill="#DEEBF7" stroke="#FFFFFF" opacity="1.000"/>
+<text x="493.57" y="725.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">10.5</text>
+<rect x="557.29" y="695.00" width="115.43" height="50.00" rx="10.00" fill="#DEEBF7" stroke="#FFFFFF" opacity="1.000"/>
+<text x="615.00" y="725.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">12.8</text>
+<rect x="678.71" y="695.00" width="115.43" height="50.00" rx="10.00" fill="#DEEBF7" stroke="#FFFFFF" opacity="1.000"/>
+<text x="736.43" y="725.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">9.6</text>
+<rect x="800.14" y="695.00" width="115.43" height="50.00" rx="10.00" fill="#DEEBF7" stroke="#FFFFFF" opacity="1.000"/>
+<text x="857.86" y="725.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">11.4</text>
+<rect x="921.57" y="695.00" width="115.43" height="50.00" rx="10.00" fill="#DEEBF7" stroke="#FFFFFF" opacity="1.000"/>
+<text x="979.29" y="725.00" font-size="12" font-weight="760" fill="#17212B" text-anchor="middle">11.3</text>
+</svg>

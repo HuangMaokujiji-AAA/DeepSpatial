@@ -1,0 +1,20 @@
+{
+  "purpose": "engineering_only_not_biological_performance_evidence",
+  "real_data": "existing MERFISH panel",
+  "holdout": 2,
+  "seed": 17,
+  "epochs_per_stage": 1,
+  "git": {
+    "patch_size": 8,
+    "hidden_size": 256,
+    "depth": 6,
+    "num_heads": 8,
+    "mlp_ratio": 4.0
+  },
+  "source_checks_match": true,
+  "checkpoint_checks_match": true,
+  "evaluation_variants": 4,
+  "generated_gap_points": 51810,
+  "heldout_points": 5810,
+  "full_multifold_training_run": false
+}

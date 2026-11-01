@@ -1,0 +1,17 @@
+{
+  "stspatial/vendor/git.py": {
+    "source": "RC_DeepSpatial/rcspatial/vendor/git.py",
+    "sha256": "27a6ec5f78ccdeaae4d8453b32b9f37b7947c318ea1495aafd136626c942fbf8",
+    "unmodified_copy": true
+  },
+  "stspatial/vendor/commons.py": {
+    "source": "RC_DeepSpatial/rcspatial/vendor/commons.py",
+    "sha256": "e44aad9fa1b96aad6b547f4944b5c95f996e2ff04ef5a9bac56a051cfbfcbd85",
+    "unmodified_copy": true
+  },
+  "stspatial/evaluation.py": {
+    "source": "RC_DeepSpatial/rcspatial/evaluation.py",
+    "sha256": "3da395baf223e56543c4f148cb029cc5101a4c743dc5e1ff66ae0790386b1fa4",
+    "unmodified_copy": true
+  }
+}
