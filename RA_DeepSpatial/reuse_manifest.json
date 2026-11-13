@@ -1,0 +1,18 @@
+{
+  "raspatial/vendor/git.py": {
+    "source": "RC_DeepSpatial/rcspatial/vendor/git.py",
+    "sha256": "3de875166f2409166d0f851b5010ec8ac87615c44f4df40f14c96d41a7e1de31"
+  },
+  "raspatial/vendor/commons.py": {
+    "source": "RC_DeepSpatial/rcspatial/vendor/commons.py",
+    "sha256": "8ba68eaf7e0d792af1568c07193aaf47e3bfda49e715dca793462ebb11765df7"
+  },
+  "raspatial/vendor/sampling.py": {
+    "source": "RC_DeepSpatial/rcspatial/vendor/sampling.py",
+    "sha256": "fdfce077845126ec424cb80f3fd50081b2f51e53cf46634de9957325045352d3"
+  },
+  "raspatial/vendor/__init__.py": {
+    "source": "RC_DeepSpatial/rcspatial/vendor/__init__.py",
+    "sha256": "bef22e83a9fb1c2ae6b60d2793c11c18096f6c75b72beb6d10b51ce9f6862fe4"
+  }
+}

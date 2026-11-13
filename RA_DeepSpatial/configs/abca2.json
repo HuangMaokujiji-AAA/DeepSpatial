@@ -1,0 +1,24 @@
+{
+  "input_glob": "../data/Zhuang-ABCA-2/sec_*.h5ad",
+  "seed": 42,
+  "split": {
+    "validation": ["sec_015", "sec_034", "sec_059"],
+    "test": ["sec_008", "sec_022", "sec_040", "sec_053", "sec_066"]
+  },
+  "data": {"spatial_key": "spatial", "z_key": "z", "label_key": "subclass", "coordinate_to_um": 1000.0, "niche_genes": 64, "cache_slices": 8},
+  "markers": {"path": "resources/markers.csv", "max_per_type": 8, "min_per_type": 1},
+  "niche": {"radius_um": 100.0, "sigma_um": 50.0},
+  "pairing": {
+    "n_samples": 200000, "alpha_spatial": 0.5, "local_reg": 0.05, "raw_reg": 0.8, "tau": 0.05,
+    "radius_um": 300.0, "spatial_scale_um": 150.0, "reference_gap_um": 400.0,
+    "max_iter": 300, "tolerance": 0.00001, "block_size": 256
+  },
+  "A": {"kappa": 0.5, "risk_fraction": 0.2, "weight_cap": 10.0},
+  "model": {"patch_size": 16, "hidden_size": 256, "depth": 6, "num_heads": 8, "mlp_ratio": 4.0},
+  "residual": {"hidden_size": 128},
+  "D": {"common_gate": 0.25, "max_rms": {"x": 0.05, "g": 0.1, "c": 0.05}, "anchor_lambda": 0.1},
+  "C": {"every_steps": 10, "cells": 32, "rollout_steps": 4, "bandwidth_um": 200.0, "grid_um": 300.0, "expression_weight": 0.1, "spatial_weight": 0.05},
+  "training": {"epochs": 100, "batch_size": 128, "lr": 0.0002, "weight_decay": 0.00001, "ema_decay": 0.999, "lambda_g": 0.1, "lambda_c": 10.0, "gradient_clip": 10.0},
+  "reconstruction": {"steps": 50, "chunk_size": 128, "solver": "rk4", "atol": 0.00001, "rtol": 0.00001, "sparsify": true, "export_step_um": 200.0},
+  "evaluation": {"rare_fraction": 0.01, "radii_um": [50, 100], "spatial_bin_um": 100.0, "niche_radius_um": 100.0, "matching_cap_um": 100.0, "max_assignment_entries": 4000000}
+}

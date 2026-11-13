@@ -1,0 +1,16 @@
+{
+  "purpose": "shape_and_gradient_engineering_only_not_performance",
+  "genes": 1122,
+  "training_subclasses": 338,
+  "train_cells": 1079913,
+  "niche_dimension": 473,
+  "source_section": "sec_001",
+  "real_cells_in_feature_check": 64,
+  "forward_batch_size": 4,
+  "device": "cpu",
+  "base_parameters": 7894884,
+  "zero_residual_exact": true,
+  "finite_neighborhood": true,
+  "finite_gradient": true,
+  "formal_training_run": false
+}

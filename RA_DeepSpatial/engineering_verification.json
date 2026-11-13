@@ -1,0 +1,61 @@
+{
+  "date": "2026-11-13",
+  "purpose": "engineering_validation_only_not_biological_performance",
+  "tests": {
+    "command": "python tests/test_pipeline.py",
+    "test_groups": 6,
+    "status": "passed",
+    "eight_arms_synthetic_end_to_end": true,
+    "test_freeze_guard": true,
+    "exact_cpu_epoch_resume_with_marker_and_anchor_rng": true,
+    "global_blocked_uot_matches_POT": true,
+    "zero_marker_field_gradients_finite": true
+  },
+  "real_dataset": {
+    "sections": 66,
+    "genes": 1122,
+    "cells": 1227408,
+    "train_sections": 58,
+    "validation_sections": [
+      "sec_015",
+      "sec_034",
+      "sec_059"
+    ],
+    "test_sections": [
+      "sec_008",
+      "sec_022",
+      "sec_040",
+      "sec_053",
+      "sec_066"
+    ],
+    "train_cells": 1079913,
+    "validation_cells": 67253,
+    "test_cells": 80242,
+    "subclass_level": true,
+    "rare_fraction_inclusive": 0.01,
+    "seed": 42,
+    "CCF_used": false
+  },
+  "real_panel_wiring": {
+    "purpose": "shape_and_gradient_engineering_only_not_performance",
+    "genes": 1122,
+    "training_subclasses": 338,
+    "train_cells": 1079913,
+    "niche_dimension": 473,
+    "source_section": "sec_001",
+    "real_cells_in_feature_check": 64,
+    "forward_batch_size": 4,
+    "device": "cpu",
+    "base_parameters": 7894884,
+    "zero_residual_exact": true,
+    "finite_neighborhood": true,
+    "finite_gradient": true,
+    "formal_training_run": false
+  },
+  "notebook_code_cells_compile": true,
+  "formal_server_training_run": false,
+  "GPU_24GB_peak_memory_measured": false,
+  "external_marker_table_present": false,
+  "actual_published_XLSX_headers_verified": false,
+  "remaining_user_action": "Download Yao2023 Supplementary Table 7, inspect headers, import to resources/markers.csv before formal eight-arm training."
+}
