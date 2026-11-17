@@ -10,7 +10,7 @@ import torch
 
 from .data import prepare, SliceStore, read_section, bracket
 from .dataset import PairDataset
-from .evaluation import evaluate
+from .evaluation import evaluate, fit_expression_probe, load_expression_probe
 from .io import digest, identity, read_json, source_identity, write_json
 from .markers import load_markers, MarkerTasks
 from .model import make_model
@@ -47,9 +47,14 @@ def validate_config(config):
     for section, keys in (('training', ('epochs', 'batch_size', 'lr', 'gradient_clip')),
                           ('C', ('every_steps', 'cells', 'rollout_steps', 'bandwidth_um', 'grid_um')),
                           ('pairing', ('n_samples', 'local_reg', 'raw_reg', 'tau', 'radius_um', 'reference_gap_um', 'block_size')),
-                          ('reconstruction', ('steps', 'chunk_size', 'export_step_um'))):
+                          ('reconstruction', ('steps', 'chunk_size', 'export_step_um')),
+                          ('evaluation', ('spatial_bin_um', 'niche_radius_um', 'matching_cap_um', 'max_assignment_entries'))):
         if any(config[section][key] <= 0 for key in keys):
             raise ValueError(f'Nonpositive configuration value in {section}.')
+    optional_eval_pos = ('top_hvg_n', 'max_w2_entries', 'sliced_w2_projections', 'ssim_sigma',
+                         'nhood_z_threshold', 'probe_hidden_size', 'probe_epochs', 'probe_batch_size', 'probe_lr')
+    if any(config['evaluation'].get(key, 1) <= 0 for key in optional_eval_pos):
+        raise ValueError('Nonpositive optional configuration value in evaluation.')
     if config['reconstruction']['steps'] < 2 or config['data']['cache_slices'] < 3:
         raise ValueError('Need at least two ODE steps and three cached sections.')
 
@@ -158,7 +163,52 @@ def run(project, config, cache, output, stage='prepare', arms=None, device='cuda
         export_volume(output, state, config, store, transports, arms, device)
 
 
+MAIN_TABLE_COLUMNS = (
+    'rare_macro_ospa1_um',
+    'rare_macro_one_to_one_f1_50um',
+    'rare_macro_verified_one_to_one_f1_50um',
+    'rare_macro_w2_distance_um',
+    'ultra_rare_macro_w2_distance_um',
+    'rare_macro_count_relative_error',
+    'rare_macro_missing_rate',
+    'rare_heldout_C_marker_macro_spatial_pcc',
+    'rare_heldout_C_marker_macro_spatial_ssim',
+    'rare_heldout_C_marker_macro_morans_i_abs_error',
+    'rare_macro_probe_concordance',
+    'rare_macro_probe_concordance_pre_sparsify',
+    'rare_macro_unbiased_niche_js',
+    'rare_nhood_zscore_matrix_pcc',
+    'global_top_hvg_grid_pcc',
+    'global_top_hvg_grid_ssim',
+    'common_macro_ospa1_um',
+)
+
+
+def ensure_expression_probe(output, store, state, config, device):
+    """Fit or load the train-only frozen expression probe; never touches validation/test sections."""
+    output = Path(output)
+    probe_path = output / 'expression_probe.pt'
+    meta_path = output / 'expression_probe.json'
+    state_hash = digest(store.cache / 'state.json')
+    if probe_path.is_file() and meta_path.is_file():
+        meta = read_json(meta_path)
+        current_hash = digest(probe_path)
+        if meta.get('probe_sha256') != current_hash or meta.get('state_sha256') != state_hash:
+            raise ValueError('Frozen expression probe changed or does not match prepared train state.')
+        return load_expression_probe(probe_path, state, device=device), current_hash
+    if (output / 'frozen_test_protocol.json').exists():
+        raise ValueError('Cannot fit expression probe after test protocol is frozen.')
+    probe, info = fit_expression_probe(store, state, config, device, save_path=probe_path)
+    probe_hash = digest(probe_path)
+    write_json(meta_path, dict(probe_sha256=probe_hash, state_sha256=state_hash, **info))
+    return probe, probe_hash
+
+
 def assess(role, output, state, config, store, transports, splits, paths, markers, independent, arms, device):
+    for name in arms:
+        if not (output/name/'trained.json').exists():
+            raise FileNotFoundError(f'Train {name} before generation/evaluation.')
+    probe, probe_hash = ensure_expression_probe(output, store, state, config, device)
     targets = [r for r in splits if r['role'] == role]
     for target in targets:
         left, right = store[target['context_left']], store[target['context_right']]
@@ -167,8 +217,6 @@ def assess(role, output, state, config, store, transports, splits, paths, marker
         raw = None
         for name in arms:
             folder = output/name/role/target['section']; folder.mkdir(parents=True, exist_ok=True)
-            if not (output/name/'trained.json').exists():
-                raise FileNotFoundError(f'Train {name} before generation/evaluation.')
             checkpoint_hash = digest(output/name/'last.pt')
             prediction_path = folder/'prediction.h5ad'; stamp = folder/'generated.json'
             if stamp.exists():
@@ -204,19 +252,24 @@ def assess(role, output, state, config, store, transports, splits, paths, marker
             metric_path = folder/'metrics.json'
             if metric_path.exists():
                 saved = read_json(metric_path)
-                if saved['truth_sha256'] != truth_hash or saved['prediction_sha256'] != digest(folder/'prediction.h5ad'):
+                if (saved['truth_sha256'] != truth_hash or saved['prediction_sha256'] != digest(folder/'prediction.h5ad')
+                        or saved.get('probe_sha256') != probe_hash):
                     raise ValueError('Evaluation inputs changed.')
                 continue
             prediction = ad.read_h5ad(folder/'prediction.h5ad')
-            metrics, per_type, per_marker = evaluate(truth, prediction, state, config, markers, independent)
+            metrics, per_type, per_marker = evaluate(truth, prediction, state, config, markers, independent, probe=probe)
             per_type.to_csv(folder/'per_type.csv', index=False)
             per_marker.to_csv(folder/'per_marker.csv', index=False)
             write_json(metric_path, dict(arm=name, role=role, target=target['section'], seed=config['seed'],
-                                         truth_sha256=truth_hash, prediction_sha256=digest(folder/'prediction.h5ad'), **metrics))
+                                         truth_sha256=truth_hash, prediction_sha256=digest(folder/'prediction.h5ad'),
+                                         probe_sha256=probe_hash, **metrics))
 
 
 def freeze(output, splits):
     checkpoint_hashes, validation_hashes = {}, {}
+    probe_path = output/'expression_probe.pt'
+    if not probe_path.is_file():
+        raise ValueError('Validation expression probe missing before test freeze.')
     for name in ARMS:
         if not (output/name/'trained.json').exists():
             raise ValueError(f'All eight arms must finish before test freeze: {name}')
@@ -227,7 +280,9 @@ def freeze(output, splits):
                 if not path.is_file():
                     raise ValueError(f'Validation missing: {path}')
                 validation_hashes[str(path.relative_to(output))] = digest(path)
-    value = dict(experiment_identity_sha256=digest(output/'identity.json'), checkpoints=checkpoint_hashes,
+    value = dict(experiment_identity_sha256=digest(output/'identity.json'),
+                 expression_probe_sha256=digest(probe_path),
+                 checkpoints=checkpoint_hashes,
                  validation=validation_hashes, selection='predeclared_final_epoch_no_test_selection',
                  test_targets=[r['section'] for r in splits if r['role'] == 'test'])
     path = output/'frozen_test_protocol.json'
@@ -243,6 +298,10 @@ def verify_freeze(output, splits):
     frozen = read_json(path)
     if frozen['experiment_identity_sha256'] != digest(output/'identity.json'):
         raise ValueError('Frozen protocol identity changed.')
+    if 'expression_probe_sha256' in frozen:
+        probe_path = output/'expression_probe.pt'
+        if not probe_path.is_file() or digest(probe_path) != frozen['expression_probe_sha256']:
+            raise ValueError('Frozen expression probe changed.')
     for name, expected in frozen['checkpoints'].items():
         if digest(output/name/'last.pt') != expected:
             raise ValueError(f'Frozen checkpoint changed: {name}')
@@ -272,6 +331,12 @@ def summarize(output, splits):
         part = table[table.role == role]
         numeric = [c for c in part.select_dtypes(include=np.number) if c != 'seed']
         part.groupby('arm')[numeric].agg(['mean', 'std']).to_csv(output/f'{role}_summary.csv')
+        headline = [c for c in MAIN_TABLE_COLUMNS if c in part.columns]
+        if headline:
+            main_df = part.groupby('arm', sort=False)[headline].agg(['mean', 'std'])
+            main_df.columns = [f'{col}_{stat}' for col, stat in main_df.columns]
+            ordered = [a for a in ARMS if a in main_df.index]
+            main_df.reindex(ordered).reset_index().to_csv(output/f'{role}_main_table.csv', index=False)
         deltas = []
         for reference in ('baseline', 'control', 'R0', 'full'):
             ref = part[part.arm == reference].set_index('target')

@@ -20,5 +20,10 @@
   "C": {"every_steps": 10, "cells": 32, "rollout_steps": 4, "bandwidth_um": 200.0, "grid_um": 300.0, "expression_weight": 0.1, "spatial_weight": 0.05},
   "training": {"epochs": 100, "batch_size": 128, "lr": 0.0002, "weight_decay": 0.00001, "ema_decay": 0.999, "lambda_g": 0.1, "lambda_c": 10.0, "gradient_clip": 10.0},
   "reconstruction": {"steps": 50, "chunk_size": 128, "solver": "rk4", "atol": 0.00001, "rtol": 0.00001, "sparsify": true, "export_step_um": 200.0},
-  "evaluation": {"rare_fraction": 0.01, "radii_um": [50, 100], "spatial_bin_um": 100.0, "niche_radius_um": 100.0, "matching_cap_um": 100.0, "max_assignment_entries": 4000000}
+  "evaluation": {
+    "rare_fraction": 0.01, "radii_um": [50, 100], "spatial_bin_um": 100.0, "niche_radius_um": 100.0,
+    "matching_cap_um": 100.0, "max_assignment_entries": 4000000, "max_w2_entries": 250000,
+    "sliced_w2_projections": 64, "ssim_sigma": 1.0, "top_hvg_n": 250, "nhood_z_threshold": 2.0,
+    "probe_hidden_size": 256, "probe_epochs": 8, "probe_batch_size": 512, "probe_lr": 0.001
+  }
 }

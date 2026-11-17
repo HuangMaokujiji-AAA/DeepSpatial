@@ -1,0 +1,339 @@
+subclass,external_panel_n,loss_marker_n,heldout_C_marker_n,loss_markers,heldout_C_markers
+001 CLA-EPd-CTX Car3 Glut,7,5,2,Nr4a2;Slc17a7;Satb2;Cux2;Zfhx4,Pou6f2;Car3
+002 IT EP-CLA Glut,7,5,2,Nr4a2;Satb2;Bcl11b;Tox3;Plekha2,Npsr1;Pparg
+003 L5/6 IT TPE-ENT Glut,6,4,2,Slc17a7;Nr2f2;Pou6f2;Sox9,Fezf2;Satb2
+004 L6 IT CTX Glut,8,6,2,Slc17a7;Satb2;Blnk;Gucy1a1;Tox;Bcl11b,Pou6f2;Pparg
+005 L5 IT CTX Glut,7,5,2,Satb2;Mkx;Lhx2;Pou6f2;Arhgap25,Fezf2;Slc17a7
+006 L4/5 IT CTX Glut,6,4,2,Satb2;Cux2;Lhx2;Pou6f2,Col26a1;Rorb
+007 L2/3 IT CTX Glut,7,5,2,Satb2;Lhx2;Ccbe1;Zfhx4;Glis3,Otof;Slc17a7
+008 L2/3 IT ENT Glut,8,6,2,Slc17a7;Cux2;Neurod2;Cd44;Meis2;Nr2f2,Tox2;Satb2
+009 L2/3 IT PIR-ENTl Glut,8,6,2,Igfn1;Zfp536;Egr3;Zfhx4;Dach1;Npas3,Bcl11a;Nr2f2
+010 IT AON-TT-DP Glut,7,5,2,Abi3bp;C1ql3;Bcl11a;Zfp536;Egr3,Prss23;Zfhx4
+011 L2 IT ENT-po Glut,3,3,0,Neurod6;Nr4a2;Lef1,
+012 MEA Slc17a7 Glut,5,4,1,Crym;Bhlhe22;Egr3;Zic5,Slc17a7
+013 COAp Grxcr2 Glut,9,7,2,Slc17a7;Bhlhe22;Egr3;Nr2f2;Zfpm2;Rorb;Foxo1,Trh;Neurod2
+014 LA-BLA-BMA-PA Glut,10,8,2,Ccn3;Fezf2;Zfpm2;Calb2;Bcl11b;Pou6f2;Man1a;Id4,Nr2f2;C1ql3
+015 ENTmv-PA-COAp Glut,7,5,2,Sv2b;Dcn;Neurod2;Abca8a;Lhx9,Id4;Fosl2
+016 CA1-ProS Glut,6,4,2,Neurod6;Fezf2;Satb2;Zfhx4,Bcl6;Fibcd1
+017 CA3 Glut,5,4,1,Slc17a7;Neurod6;Tspan18;Lhx9,Hopx
+018 L2 IT PPP-APr Glut,6,4,2,Satb2;Pou3f3;Ctxn3;Glis3,Tox;Tll1
+019 L2/3 IT PPP Glut,8,6,2,Meis2;Cux2;Satb2;Lhx2;Tox;Tead1,Tshz2;Cdc14a
+020 L2/3 IT RSP Glut,8,6,2,Tshz2;Cxcl14;Tox;Zfpm2;Grik3;Ovol2,Pparg;Satb2
+021 L4 RSP-ACA Glut,2,2,0,Tshz2;Cbln1,
+022 L5 ET CTX Glut,6,4,2,Slc17a7;Bcl11b;Lratd2;L3mbtl4,Fezf2;Mkx
+023 SUB-ProS Glut,6,4,2,Pou3f1;Bcl6;Zfpm2;Nr2f2,Rab38;Fezf2
+024 L5 PPP Glut,4,3,0,Satb2;Fezf2;L3mbtl4,
+025 CA2-FC-IG Glut,4,4,0,Slc17a7;Fezf2;Zfp536;Ovol2,
+026 NLOT Rho Glut,2,2,0,Sim1;Slc17a7,
+027 L6b EPd Glut,5,4,1,Satb2;Bcl11b;Fezf2;Pou6f2,Meis2
+028 L6b/CT ENT Glut,6,4,2,Satb2;Cplx3;Npr3;Nr2f2,Nxph3;Zeb2
+029 L6b CTX Glut,6,4,2,Cplx3;Satb2;Zfpm2;Pou6f2,Clic5;Bcl11b
+030 L6 CT CTX Glut,6,4,2,Syt6;Satb2;Zfpm2;Pou6f2,Rprm;Pou3f3
+031 CT SUB Glut,5,4,1,Zfpm2;Sntb1;Prss35;Rorb,Nr2f2
+032 L5 NP CTX Glut,7,5,2,Fezf2;Satb2;Meis2;Tox2;Ascl1,Pou3f3;Nxph1
+033 NP SUB Glut,6,4,2,Fezf2;Mafa;Rorb;Crybg1,Nr4a2;Nxph3
+034 NP PPP Glut,4,3,0,Rxfp1;Satb2;Pou3f3,
+035 OB Eomes Ms4a15 Glut,2,2,0,Eomes;Mkx,
+036 HPF CR Glut,3,3,0,Ndnf;Trp73;Ebf3,
+037 DG Glut,4,4,0,C1ql3;Prox1;Glis3;Egr3,
+038 DG-PIR Ex IMN,2,2,0,Prox1;Pou3f3,
+039 OB Meis2 Thsd7b Gaba,3,3,0,Nfix;Arx;Meis1,
+040 OB Trdn Gaba,7,5,2,Meis2;Zeb2;Sp9;Ctxn3;Bcl6,Ndnf;Bcl11b
+041 OB-in Frmd7 Gaba,7,5,2,Frmd7;Vipr2;Zeb2;Sp8;Pparg,Bcl11b;Meis2
+042 OB-out Frmd7 Gaba,6,4,2,Etv1;Apold1;Zic2;Kcnmb2,Zeb2;Sp8
+043 OB-mi Frmd7 Gaba,4,4,0,Sall3;Tcap;Frmd7;St18,
+044 OB Dopa-Gaba,4,4,0,Lgr5;Zeb2;Lpar1;Nfatc1,
+045 OB-STR-CTX Inh IMN,6,4,2,Meis2;Dlx2;Nfix;Zeb2,Pax6;Bcl11b
+046 Vip Gaba,4,4,0,Npas1;Prox1;Grpr;Sall1,
+047 Sncg Gaba,5,4,1,Dlx1as;Galnt18;Egln3;Sp8,Npas1
+048 RHP-COA Ndnf Gaba,10,8,2,Gad2;Ndnf;Npas1;Ntng1;Zeb2;Maf;Tox2;Nfib,Htr3a;Arx
+049 Lamp5 Gaba,7,5,2,Tox3;Maf;Prox1;Nr2f2;Tshz1,Ndnf;Cplx3
+050 Lamp5 Lhx6 Gaba,3,3,0,Lhx6;Mctp2;Nr2e1,
+051 Pvalb chandelier Gaba,6,4,2,Pvalb;Maf;Vipr2;Zbtb7c,Nfib;Lhx6
+052 Pvalb Gaba,4,4,0,Lhx6;Rbp4;Klf5;Creb5,
+053 Sst Gaba,7,5,2,Lhx6;Mafb;Reln;Sox6;Rbp4,Npas1;Zeb2
+054 STR Prox1 Lhx6 Gaba,5,4,1,Lhx6;Maf;St18;Gna14,Sox2
+055 STR Lhx8 Gaba,4,4,0,Lhx6;Lhx8;St18;Zic1,
+056 Sst Chodl Gaba,5,4,1,Lhx6;Hhip;Rarb;L3mbtl4,Sox2
+057 NDB-SI-MA-STRv Lhx8 Gaba,2,2,0,Lhx6;Sox6,
+058 PAL-STR Gaba-Chol,6,3,2,Chat;Lhx8;Nkx2-1,Tshz2;Zic1
+059 GPe-SI Sox6 Cyp26b1 Gaba,5,4,1,Npas1;Sox6;Prox1;Lcp1,Arx
+060 OT D3 Folh1 Gaba,4,4,0,Isl1;Drd3;Egr3;Tshz1,
+061 STR D1 Gaba,5,4,1,Slc32a1;Egr3;Six3;Ebf1,Drd1
+062 STR D2 Gaba,5,4,1,Pcp4l1;Sp9;Six3;Klf5,Adora2a
+063 STR D1 Sema5a Gaba,7,5,2,Gpr88;Tshz1;Alk;Tox;Rbp1,Six3;Egr3
+064 STR-PAL Chst9 Gaba,5,4,1,Meis2;Six3;Chst9;Nfib,Sp9
+065 IA Mgp Gaba,6,4,2,Col23a1;Arx;Sp9;Nfix,Nxph1;Rreb1
+066 NDB-SI-ant Prdm12 Gaba,5,4,1,Zic1;Meis2;Pax6;Prdm12,Pcp4l1
+067 LSX Sall3 Pax6 Gaba,4,4,0,Pax6;Prdm12;Sall3;Eya4,
+068 LSX Otx2 Gaba,5,4,1,Slc32a1;Sp9;Six3;Otx2,Ptk2b
+069 LSX Nkx2-1 Gaba,7,5,2,C130074G19Rik;Prdm16;Zic5;Sp8;Tox,Zic4;Slc32a1
+070 LSX Prdm12 Slit2 Gaba,5,4,1,Prdm12;Prdm16;Isl1;Egr3,Hs3st2
+071 LSX Prdm12 Zeb2 Gaba,6,4,2,Prdm12;Ano1;Slc18a2;Zeb2,Isl1;Myo5b
+072 LSX Sall3 Lmo1 Gaba,6,4,2,Col6a3;Prdm12;Zic5;Prdm16,Zeb2;Trpc4
+073 MEA-BST Sox6 Gaba,7,5,2,Slc32a1;Tshz2;Cxcl14;Zbtb7c;Sox6,Nr2f2;Bcl11b
+074 MEA-BST Lhx6 Sp9 Gaba,5,4,1,Lhx6;Scn5a;Nxph2;Zfp831,Fign
+075 MEA-BST Lhx6 Nr2e1 Gaba,3,3,0,Lhx6;Nr2e1;Satb1,
+076 MEA-BST Lhx6 Nfib Gaba,6,4,2,Lhx6;Nr2f2;Nfib;Prox1,Rreb1;Greb1
+077 CEA-BST Gal Avp Gaba,4,4,0,Meis2;Nr2f2;Isl1;Esr2,
+078 SI-MA-ACB Ebf1 Bnc2 Gaba,3,3,0,Meis2;Bnc2;Dlx6,
+079 CEA-BST Six3 Cyp26b1 Gaba,5,4,1,Cyp26b1;Pax6;Six3;Zfp831,Id4
+080 CEA-AAA-BST Six3 Sp9 Gaba,7,5,2,Six3;Gpr88;Id4;Bcl11b;Egr3,Nr2f2;Tshz1
+081 ACB-BST-FS D1 Gaba,6,4,2,Meis2;Nr2f1;Zfp503;Wls,Isl1;Zim1
+082 CEA-BST Ebf1 Pdyn Gaba,6,4,2,Dlx6;Bcl11b;6430628N08Rik;Aff2,Zfp831;Ebf1
+083 CEA-BST Rai14 Pdyn Crh Gaba,8,5,2,Gda;Tac2;Zim1;Isl1;Rai14,Pou3f3;Arx
+084 BST-SI-AAA Six3 Slc22a3 Gaba,3,3,0,Six3;Npas1;Dach2,
+085 SI-MPO-LPO Lhx8 Gaba,2,2,0,Lhx6;Gbx2,
+086 MPO-ADP Lhx8 Gaba,6,4,2,Lhx8;Zfhx4;Zic1;Pde11a,Tox;Lhx6
+087 MPN-MPO-LPO Lhx6 Zfhx3 Gaba,3,3,0,Lhx6;Pde11a;Sox2,
+088 BST Tac2 Gaba,6,4,2,Satb2;Nr2f2;Isl1;Arx,Lamp5;Slc32a1
+089 PVR Six3 Sox3 Gaba,6,4,2,Zic1;Zic4;Isl1;Ano1,Six3;Rorb
+090 BST-MPN Six3 Nrgn Gaba,5,4,1,Slc32a1;Six3;Rspo1;Nr2f2,Zic1
+091 ARH-PVi Six6 Dopa-Gaba,4,4,0,Slc6a3;Coch;Satb2;Sox6,
+092 TMv-PMv Tbx3 Hist-Gaba,3,3,0,Hdc;Barhl2;Tbx3,
+093 RT-ZI Gnb3 Gaba,4,4,0,Six3;Meis2;Cplx3;Creb5,
+094 SCH Six6 Cdc14a Gaba,4,4,0,Six6;Klf5;Cdc14a;Zic4,
+095 DMH Prdm13 Gaba,3,3,0,Prdm13;St18;Zfhx4,
+096 PVHd Gsc Gaba,1,1,0,Meis2,
+097 PVHd-SBPV Six3 Prox1 Gaba,4,4,0,Isl1;Sox2;Prox1;Arx,
+098 AHN-SBPV-PVHd Pdrm12 Gaba,2,2,0,Prdm12;Nr2f2,
+099 SBPV-PVa Six6 Satb2 Gaba,5,4,1,Lhx1;Six6;Esr1;Tox3,Satb2
+100 AHN Onecut3 Gaba,4,4,0,Slc32a1;Onecut3;Arx;Gda,
+101 ZI Pax6 Gaba,7,5,2,Pax6;Arx;Lhx1;Meis2;Nr2f2,Isl1;Pou6f2
+102 DMH-LHA Gsx1 Gaba,3,3,0,Isl1;Gsx1;Prox1,
+103 PVHd-DMH Lhx6 Gaba,5,4,1,Lhx6;Npas1;Glra1;St18,Sp9
+104 TU-ARH Otp Six6 Gaba,2,2,0,Otp;Six6,
+105 TMd-DMH Foxd2 Gaba,1,1,0,Sox14,
+106 PVpo-VMPO-MPN Hmx2 Gaba,4,4,0,Slc32a1;Gal;Esr1;Hmx2,
+107 DMH Hmx2 Gaba,5,4,1,Dlk1;Gal;Nr2f2;Lef1,Hmx2
+108 ARH-PVp Tbx3 Gaba,4,4,0,Dlk1;Slc32a1;Tbx3;Six3,
+109 LGv-ZI Otx2 Gaba,4,4,0,Sp9;Tshz2;Rmst;Otx2,
+110 BST-po Iigp1 Glut,2,2,0,Sox5;Cpa6,
+111 TRS-BAC Sln Glut,4,4,0,Eomes;Ebf2;Adgrd1;Sln,
+112 GPi Tbr1 Cngb3 Gaba-Glut,2,2,0,Pax6;Cngb3,
+113 MEA-COA-BMA Ccdc42 Glut,10,6,2,Nr2f2;Zbtb7c;Zim1;Adcyap1;Kcnh3;Egr3,Scn5a;Trhr
+114 COAa-PAA-MEA Barhl2 Glut,7,5,2,Barhl2;Nxph4;Lhx9;Kcnh3;Nr2f2,Lhx2;Egr3
+115 MS-SF Bsx Glut,3,3,0,Zic1;Isl1;Onecut3,
+116 AVPV-MEPO-SFO Tbr1 Glut,6,4,2,Zic1;Gad2;Emx2;Six3,Gng8;Lhx9
+117 LHA Barhl2 Glut,7,5,2,AW551984;Lhx5;Barhl2;Prlr;Tox,Meis2;Samd3
+118 ADP-MPO Trp73 Glut,1,1,0,Trp73,
+119 SI-MA-LPO-LHA Skor1 Glut,3,3,0,Tshz2;Meis2;Il31ra,
+120 MEA Otp Foxp2 Glut,4,3,0,Otp;Slc17a6;Stc1,
+121 MEA-BST Otp Zic2 Glut,4,4,0,Otp;Cxcl14;Zic4;Nr2f2,
+122 LHA-MEA Otp Glut,2,2,0,Otp;Lhx2,
+123 DMH Nkx2-4 Glut,5,4,1,Bsx;Asb4;Prox1;Nkx2-4,Tafa4
+124 MPN-MPO-PVpo Hmx2 Glut,3,3,0,Slc17a6;Nkx2-1;Lhx5,
+125 DMH Hmx2 Glut,6,4,2,Slc17a6;Isl1;Rorb;Hmx2,Lef1;Onecut3
+126 ARH-PVp Tbx3 Glut,5,4,1,Nkx2-1;Tbx3;Bsx;Nhlh2,Slc17a6
+127 DMH-LHA Vgll2 Glut,2,2,0,Lhx9;Vgll2,
+128 VMH Fezf1 Glut,3,3,0,Fezf1;Nkx2-1;Htr7,
+129 VMH Nr5a1 Glut,1,1,0,Nr5a1,
+130 LHA Pmch Glut,2,2,0,Nkx2-1;Otx1,
+131 LHA-AHN-PVH Otp Trh Glut,1,1,0,Sim1,
+132 AHN-RCH-LHA Otp Fezf1 Glut,3,3,0,Otp;Fezf1;Ebf1,
+133 PVH-SO-PVa Otp Glut,6,4,2,Otp;Sim1;Lhx5;Zbtb7c,Pdyn;Tns1
+134 PH-ant-LHA Otp Bsx Glut,4,4,0,Slc17a6;Otp;Bsx;Sim1,
+135 STN-PSTN Pitx2 Glut,4,4,0,Cdh23;Barhl2;Lmx1a;Ebf2,
+136 PMv-TMv Pitx2 Glut,4,4,0,Nr4a2;Irx3;Lmx1a;C1ql3,
+137 PH-an Pitx2 Glut,3,3,0,Slc17a6;Sim1;Pax7,
+138 PH Pitx2 Glut,3,3,0,Lmx1a;Lncenc1;Irx3,
+139 PH-LHA Foxb1 Glut,3,3,0,Pitx2;Foxb1;Mkx,
+140 PMd-LHA Foxb1 Glut,2,2,0,Foxb1;Emx2,
+141 PH-SUM Foxa1 Glut,3,3,0,Pitx2;Lmx1a;Zeb2,
+142 HY Gnrh1 Glut,2,2,0,Gnrh1;Six6,
+143 MM-ant Foxb1 Glut,4,4,0,Foxb1;Lhx1;Sox5;L3mbtl4,
+144 MM Foxb1 Glut,2,2,0,Foxb1;Sall3,
+145 MH Tac2 Glut,5,4,1,Nr4a2;Ano1;Gng8;Sox6,Pou4f1
+146 LH Pou4f1 Sox1 Glut,4,4,0,Nr4a2;Pou4f1;Zic4;Shox2,
+147 AD Serpinb7 Glut,6,3,2,C1ql2;Zic1;Shox2,Zic5;Gbx2
+148 AV Col27a1 Glut,5,4,1,Zic1;Shox2;Npsr1;Sox5,Pparg
+149 PVT-PT Ntrk1 Glut,3,3,0,Gbx2;Zic5;Bcl11b,
+150 CM-IAD-CL-PCN Sema5b Glut,5,4,1,Gbx2;Sema5b;Bhlhe22;Edaradd,Nfia
+151 TH Prkcd Grin2c Glut,6,4,2,Shox2;Slc9a3r1;Unc13c;Sox5,Gbx2;Lef1
+152 RE-Xi Nox4 Glut,7,4,2,Rreb1;Rgs16;Shox2;Zic5,Gbx2;Nox4
+153 MG-POL-SGN Nts Glut,5,3,1,Gbx2;Lhfp;Lef1,Otof
+154 PF Fzd5 Glut,5,3,1,Fzd5;Shox2;Gli3,Ctxn3
+155 PRC-PAG Pax6 Glut,3,3,0,Slc17a6;Pax6;Barhl2,
+156 MB-ant-ve Dmrta2 Glut,3,3,0,Glra1;Emx2;Nr2f2,
+157 RN Spp1 Glut,4,4,0,Spp1;Pou4f1;Ttc6;Esrrb,
+158 MRN-PAG Nkx6-1 Glut,3,3,0,Pax5;Slc30a3;Pitx2,
+159 IF-RL-CLI-PAG Foxa1 Glut,3,3,0,Ebf3;Foxa2;Nfib,
+160 PAG-SC Neurod2 Meis2 Glut,3,3,0,Shox2;Barhl1;Nfib,
+161 PAG Pou4f3 Glut,1,1,0,Ebf2,
+162 CUN Evx2 Lhx2 Glut,6,4,2,Lhx9;Evx2;Bnc2;Otx2,Ebf2;En1
+163 APN C1ql2 Glut,3,3,0,C1ql2;Tfap2d;Esrrb,
+164 APN C1ql4 Glut,5,4,1,Ctxn3;Tfap2d;Nr2f2;Onecut2,Maf
+165 PAG-MRN Pou3f1 Glut,5,4,1,Ebf2;Calb1;Zbtb7c;L3mbtl4,Shox2
+166 MRN Pou3f1 C1ql4 Glut,6,4,2,Shox2;Irx2;Onecut2;Pou6f2,Ebf3;Tcf7l2
+167 PRC-PAG Tcf7l2 Irx2 Glut,5,4,1,Irx2;Syt17;Zic4;Galnt18,Tfap2d
+168 SPA-SPFm-SPFp-POL-PIL-PoT Sp9 Glut,6,4,2,Slc17a6;Shox2;Sp9;Zfp536,Tcf7l2;Esrrg
+169 PAG-SC Pou4f1 Zic1 Glut,5,4,1,Zic1;Lhx9;Tcf7l2;Barhl1,Zfhx4
+170 PAG-MRN Tfap2b Glut,3,3,0,Tfap2b;Shox2;Bnc2,
+171 PAG Pou4f1 Bnc2 Glut,5,4,1,Shox2;Bnc2;Tox;4930438E09Rik,Ebf2
+172 PAG Pou4f1 Ebf2 Glut,7,5,2,Tcf7l2;Pou4f1;Ebf2;Kit;Barhl1,D130079A08Rik;Bcl11a
+173 PAG Pou4f2 Glut,6,4,2,Pou4f2;Zfhx4;Barhl1;Sox6,Npsr1;Shox2
+174 PAG Pou4f2 Mesi2 Glut,4,4,0,Shox2;Npas1;Pou4f1;Gli3,
+175 SC Bnc2 Glut,6,4,2,Shox2;Sox6;Tcf7l2;Bnc2,Zeb2;Ebf2
+176 SCig Foxb1 Glut,3,3,0,Tfap2b;Foxb1;Sox6,
+177 SCig-an-PPT Foxb1 Glut,3,3,0,Tcf7l2;Foxb1;Nr2f2,
+178 SCig Foxb1 Otx2 Glut,2,2,0,Nfix;Foxb1,
+179 SCdg-PAG Tfap2b Glut,4,4,0,Tfap2b;Bnc2;Sox5;D130079A08Rik,
+180 SCiw Pitx2 Glut,2,2,0,Pitx2;Bnc2,
+181 IC Tfap2d Maf Glut,4,4,0,Zfhx4;Tfap2d;Irx2;En1,
+182 CUN-PPN Evx2 Meis2 Glut,5,4,1,Meis2;Evx2;En1;Bnc2,Slc5a7
+183 PBG Mtnr1a Glut-Chol,1,1,0,Evx1os,
+184 PAG Tcf24 Glut,3,3,0,Otp;Nkx2-1;Onecut3,
+185 SCig Tfap2b Chrnb3 Glut,4,4,0,Etv1;Tfap2b;Bcl11b;Prkcq,
+186 SCop Pou4f2 Neurod2 Glut,6,4,2,Pou4f2;Barhl1;Zfp536;Hpse2,Bcl11b;Shox2
+187 SCsg Pde5a Glut,6,4,2,Shox2;Bnc2;Ebf2;Robo3,Barhl1;Lef1
+188 SCop Sln Glut,6,4,2,Npnt;Irx2;Pou4f1;Barhl1,Bcl11b;Nhlh2
+189 PAG Ucn Glut,2,2,0,Irx2;Foxa2,
+190 ND-INC Foxd2 Glut,3,3,0,Slc17a6;Ebf3;Foxd2,
+191 PAG-MRN Rln3 Gaba,3,3,0,Nr4a2;Gata3;Nkx2-2,
+192 PPN-CUN-PCG Otp En1 Gaba,2,2,0,En1;Pax7,
+193 MRN-PPN-CUN Pax8 Gaba,4,4,0,Pax5;Otp;Pax8;En2,
+194 MRN-VTN-PPN Pax5 Cdh23 Gaba,7,5,2,Gad2;Pax5;Cdh23;Pax8;Zfp521,Sox14;Lhx1
+195 SNr-VTA Pax5 Npas1 Gaba,3,3,0,Pax5;Npas1;Sp9,
+196 PAG-PPN Pax5 Sox21 Gaba,6,4,2,Pax5;Tal1;Nfib;Col23a1,Sox21;En1
+197 SNr Six3 Gaba,2,2,0,Six3;Irx3,
+198 IC Six3 En2 Gaba,6,4,2,Gata3;Emx2;Car8;Kcnmb2,Six3;Nfia
+199 PAG-MRN-RN Foxa2 Gaba,2,2,0,Pax5;Foxa2,
+200 PAG-ND-PCG Onecut1 Gaba,1,1,0,Gata3,
+201 PAG-RN Nkx2-2 Otx1 Gaba,6,4,2,Slc32a1;Gata3;Tfap2b;Pou3f3,Nkx2-2;Meis2
+202 PRT Tcf7l2 Gaba,4,4,0,Tcf7l2;Syt6;Gata3;Slc30a3,
+203 LGv-SPFp-SPFm Nkx2-2 Tcf7l2 Gaba,3,3,0,Tcf7l2;Gata3;Nkx2-2,
+204 SC Otx2 Gcnt4 Gaba,4,4,0,Maf;Pax7;Gcnt4;Zic1,
+205 SC-PAG Lef1 Emx2 Gaba,4,4,0,Tfap2b;Zfpm2;Lef1;Pax7,
+206 SCm-PAG Cdh23 Gaba,6,4,2,Zic1;Gata3;Otx2;Lef1,Cdh23;Tfap2b
+207 SCs Dmbx1 Gaba,4,4,0,Fibcd1;Dmbx1;Zfpm2;Sox2,
+208 SC Lef1 Otx2 Gaba,4,4,0,Tfap2b;Pax7;Otx2;Lef1,
+209 SCs Pax7 Nfia Gaba,3,3,0,Pax7;Nfib;Shox2,
+210 PRT Mecom Gaba,2,2,0,Mecom;Gata3,
+211 SC Tnnt1 Gli3 Gaba,3,3,0,Ebf3;Gata3;Gli3,
+212 SCs Lef1 Gli3 Gaba,2,2,0,Pax7;Gli3,
+213 SCsg Gabrr2 Gaba,5,4,1,Otx2;Meis2;Lef1;Cplx3,Rorb
+214 IPN Otp Crisp1 Gaba,4,4,0,Meis2;Slc32a1;Pax7;Mafa,
+215 SNc-VTA-RAmb Foxa1 Dopa,3,3,0,Slc6a3;En1;Ntn1,
+216 MB-MY Tph2 Glut-Sero,2,2,0,Lmx1b;Gata3,
+217 PB Lmx1a Glut,2,2,0,Lmx1a;Tfap2b,
+218 PSV Lmx1a Trpv6 Glut,9,6,2,Meis2;Zim1;Ebf2;Tspan18;Ankfn1;Dach2,Zfhx4;Meis1
+219 PB-SUT Tlx3 Lhx2 Glut,4,4,0,Lhx2;Irx3;Lmx1b;Bmp6,
+220 PB Pax5 Glut,6,4,2,Tfap2b;Ebf3;Pax5;Bcl11b,Prkcq;Arhgap36
+221 LDT-PCG Vsx2 Lhx4 Glut,4,4,0,Lhx4;Vsx2;Ebf2;Sox2,
+222 PB Evx2 Glut,8,6,2,Lhx9;Meis1;Cbln1;Gabrq;Zfhx4;Nr2f1,Nhlh2;Meis2
+223 B-PB Nr4a2 Glut,5,4,1,Meis2;D930028M14Rik;Onecut3;Evx2,Esr1
+224 PCG-PRNr Vsx2 Nkx6-1 Glut,4,4,0,Zfhx4;Vsx2;Lhx5;Nr2f1,
+225 PRNc-NI-SG-RPO Vsx2 Nr4a2 Glut,4,4,0,Vsx2;Nr2f2;Calb1;Nr4a2,
+226 PRNc-PARN Tlx1 Glut,5,4,1,Dlk1;Meis2;Lmx1b;Pou6f2,Plagl1
+227 PB-PSV Phox2b Glut,5,4,1,Slc17a6;Phox2b;Lmx1b;Ptger3,Onecut2
+228 PSV Pvalb Lhx2 Glut,4,4,0,Prrxl1;Lmx1b;Tgfbr2;Lhx2,
+229 PB-NTS Phox2b Ebf3 Lmx1b Glut,5,3,1,Phox2b;Lmx1b;Slc24a4,Ebf3
+230 PRNr Otp Nfib Glut,5,4,1,Ebf2;Npas1;Neurod2;Evx1os,Otp
+231 IPN-LDT Vsx2 Nkx6-1 Glut,4,4,0,Adcyap1;Pou4f2;Vsx2;Pax8,
+232 LDT Vsx2 Nkx6-1 Nfib Glut,4,4,0,Slc17a6;Pax8;Nfib;Vsx2,
+233 NLL-SOC Spp1 Glut,2,2,0,Spp1;Maf,
+234 MEV Ppp1r1c Glut,0,0,0,,
+235 PG-TRN-LRN Fat2 Glut,3,3,0,Irx2;Pax6;Barhl1,
+236 IRN Vip Glut,3,3,0,Slc17a6;Mecom;Gli3,
+237 PRP-NI-PRNc-GRN Otp Glut,3,3,0,Otp;Evx2;Zfhx4,
+238 NTS Phox2b Glut,3,3,0,Phox2b;Shox2;Hoxc4,
+239 MARN-GRN Pyy Glut,2,2,0,Vsx2;Sall3,
+240 MDRNv Lhx4 Qrfprl Glut,4,4,0,Calcr;Shox2;Lhx4;Gbx2,
+241 NTS Mbnl3 Glut,5,3,1,Ebf3;Hoxc4;Hoxb5,Pou4f1
+242 PGRNd Dmbx1 Glut,2,2,0,Dmbx1;Mecom,
+243 PGRN-PARN-MDRN Hoxb5 Glut,11,7,3,Slc17a6;Meis2;Sncg;Zim1;Zfp521;Trhde;Ebf1,Lamp5;Zfhx4;Hoxc4
+244 MV-SPIV Slc6a2 Glut,4,4,0,Zfhx4;Hoxb3;Lhx9;Barhl1,
+245 SPVI-SPVC Tlx3 Ebf3 Glut,5,3,1,Ebf3;Lmx1b;Ebf2,Hoxb6
+246 CU-ECU-SPVI Foxb1 Glut,3,3,0,Slc17a6;Hoxb6;Lhx9,
+247 MV-SPIV Phox2b Ebf3 Lbx1 Glut,2,2,0,Phox2b;Neurod2,
+248 MV-SPIV Zic4 Neurod2 Glut,6,4,2,Myo5b;Zic4;Tshz3;Pou4f1,Nfib;Hoxb3
+249 NTS Aldh1a2 Glut,2,2,0,Nr4a2;Hoxb6,
+250 CBN Neurod2 Pvalb Glut,5,4,1,C1ql3;Kcng4;Esrrb;Lhx9,Neurod2
+251 NTS Dbh Glut,3,3,0,Dbh;Phox2b;Hoxb6,
+252 DMX VII Tbx20 Chol,0,0,0,,
+253 IO Fgl2 Glut,2,2,0,Pou4f1;Crh,
+254 VCO Mafa Meis2 Glut,8,6,2,Mafb;Slc17a7;Mafa;Pparg;Bmpr1b;Rorb,Ebf1;Bnc2
+255 SPVO Mafa Meis2 Glut,5,3,1,Mafb;Fn1;Mafa,Bnc2
+256 SPVC Mafa Glut,2,2,0,Mafa;Slc30a3,
+257 SPVC Ccdc172 Glut,3,3,0,Prrxl1;Bnc2;Hoxb8,
+258 SPVC Nmu Glut,3,2,0,Hoxb8;Lmx1b,
+259 MDRNd Bves Glut,7,5,2,Ebf3;Prdm16;Meis2;Hoxb5;Hoxc4,Zeb2;Ebf2
+260 MDRNv Crp Glut,3,3,0,Slc17a6;Vsx2;Sp8,
+261 HB Calcb Chol,5,4,1,Lhx4;Isl1;Creb5;Vdr,Tshz2
+262 Pineal Crx Glut,0,0,0,,
+263 CS-RPO Meis2 Gaba,5,4,1,Calb2;Meis2;Otp;Lhx1,Bhlhe22
+264 PRNc Otp Gly-Gaba,5,4,1,Meis2;Otp;En1;Lhx1,Slc6a5
+265 PB Sst Gly-Gaba,4,4,0,Pax2;Ebf1;Tfap2b;Col23a1,
+266 PRNc Prox1 Brs3 Gly-Gaba,6,4,2,Otp;Meis2;Neurod2;Brs3,St18;Hmcn1
+267 CS-PRNr-PCG Tmem163 Otp Gaba,4,4,0,Otp;Irx2;Nr2f1;Onecut2,
+268 CS-PRNr-DR En1 Sox2 Gaba,4,4,0,En1;Sox2;Sox14;Irx3,
+269 LDT Fgf7 Gaba,3,3,0,Nr4a2;Nfib;Pax5,
+270 LDT-DTN Gata3 Nfix Gaba,5,4,1,Zfpm2;Gata3;St18;Sp9,Tshz2
+271 NI-RPO Gata3 Nr4a2 Gaba,9,7,2,Slc32a1;Slc17a8;Gata2;Vwa5b1;Zfhx4;Meis2;Irx5,Sox2;Irx2
+272 LDT-PCG-CS Gata3 Lhx1 Gaba,6,4,2,Sox2;En1;Irx3;Lhx1,Gata3;Ebf3
+273 PDTg-PCG Pax6 Gaba,3,3,0,Tal1;Pax6;Irx2,
+274 PDTg Otp Shroom3 Gaba,4,2,0,Lhx1;Zeb2,
+275 PDTg Otp Olig3 Gaba,1,1,0,Olig3,
+276 LDT-PCG St18 Gaba,6,4,2,Otp;Ebf2;Ebf1;Foxo1,St18;Ebf3
+277 DTN-LDT-IPN Otp Pax3 Gaba,4,4,0,Otp;Pax7;Pax3;Foxo1,
+278 NLL Gata3 Gly-Gaba,8,6,2,Meis2;Maf;En1;Gata2;Kcnh8;Esrrb,Oprd1;Gata3
+279 PSV Pax2 Gly-Gaba,5,4,1,Pax2;Meis2;Maf;Pcdh20,St3gal1
+280 NLL-po Pax7 Gaba,4,3,0,Rreb1;Spp1;Pax7,
+281 POR Gata3 Gly-Gaba,3,2,0,En1;Hoxb3,
+282 POR Spp1 Gly-Gaba,2,2,0,Slc6a5;Nkx6-1,
+283 PRP Otp Gly-Gaba,3,3,0,Otp;Mab21l2;Pax8,
+284 GRN-IRN-MDRNd Ikzf1 Gly-Gaba,2,2,0,Hoxb5;Slc6a5,
+285 MY Lhx1 Gly-Gaba,8,6,2,Slc6a5;Pax2;Sv2b;Lhx1;Hoxb3;Zfpm2,Rarb;Meis2
+286 PPY-PGRNl Vip Glyc-Gaba,3,3,0,Tfap2b;Gbx2;Lhx1,
+287 MV-SPIV-PRP Dmbx1 Gly-Gaba,5,4,1,Dmbx1;Slc6a5;Ebf3;Nhlh2,Meis2
+288 MDRN Hoxb5 Ebf2 Gly-Gaba,3,3,0,Pax2;Hoxb6;Irx3,
+289 MDRNd Prox1 Pax6 Gly-Gaba,4,4,0,Slc6a5;Hoxb5;Pax6;Sp8,
+290 MY Prox1 Lmo7 Gly-Gaba,11,8,3,Pax2;Skor1;Cyp26b1;Neurod2;Tfap2a;Nr2f2;Thrsp;L3mbtl4,Gad2;Esr1;Prox1
+291 NTS-MDRNd Prox1 Zic1 Gly-Gaba,4,4,0,Tfap2a;Gpr101;Prox1;Zic5,
+292 MV Nkx6-1 Gly-Gaba,5,4,1,Slc32a1;Pvalb;Neurod2;Serpina9,Nkx6-1
+293 PAS-MV Ebf2 Gly-Gaba,6,4,2,Slc6a5;Pax2;Bhlhe22;Ebf2,Ebf3;Zic1
+294 MV Pax6 Gly-Gaba,5,4,1,Slc6a5;Neurod2;Pax2;Pax6,Irx2
+295 CBN Dmbx1 Gaba,4,4,0,Ramp3;Dmbx1;Irx2;Ebf3,
+296 RPA Pax6 Hoxb5 Gly-Gaba,5,4,1,Dlk1;Slc6a5;Irx2;Hoxb5,Tal1
+297 CU-ECU Pax2 Gly-Gaba,3,2,0,Pax2;Egfr,
+298 PRP Gata3 Slc6a5 Gly-Gaba,4,4,0,Slc6a5;Gata3;Hoxb3;Ntf3,
+299 MARN-PPY Ngfr Gly-Gaba,3,3,0,Slc6a5;Gata3;Sall1,
+300 PARN-MDRNd-NTS Gbx2 Gly-Gaba,5,4,1,Pax2;Adra1a;Zic4;Zfp536,Gbx2
+301 MV Nr4a2 Gly-Gaba,4,4,0,Slc18a2;Nr4a2;Gbx2;Zbtb7c,
+302 MV Xdh Gly-Gaba,3,3,0,Slc6a5;Gbx2;Sox9,
+303 IRN Dmbx1 Pax2 Gly-Gaba,2,2,0,Dmbx1;Hoxb5,
+304 NTS-PARN Neurod2 Gly-Gaba,5,4,1,Slc6a5;Bcl11a;Neurod2;Tfap2a,Arhgap15
+305 SPVI-SPVC Sall3 Nfib Gly-Gaba,4,4,0,Pax2;Sall3;Hoxb8;Nfib,
+306 SPVI-SPVC Sall3 Lhx1 Gly-Gaba,2,2,0,Ebf1;Lhx1,
+307 RO-RPA Pkd2l1 Gaba,2,2,0,Tal1;Nkx6-1,
+308 DCO Il22 Gly-Gaba,4,4,0,Slc6a5;Pax2;Nr2f2;Zic5,
+309 CB PLI Gly-Gaba,9,6,2,Slc6a5;Rgs6;Neurod6;Tfap2b;Mkx;Bmp6,Pax2;Zic1
+310 CBX Golgi Gly-Gaba,2,2,0,Slc6a5;Tfap2b,
+311 CBX MLI Megf11 Gaba,3,3,0,Homer3;Tfap2b;Hopx,
+312 CBX MLI Cdh22 Gaba,2,2,0,Tfap2b;En2,
+313 CBX Purkinje Gaba,0,0,0,,
+314 CB Granule Glut,5,4,1,Etv1;Pax6;Neurod2;Ror1,Gabra6
+315 DCO UBC Glut,3,3,0,Eomes;Lmx1a;Sln,
+316 Bergmann NN,1,1,0,Pax3,
+317 Astro-CB NN,3,3,0,Cyp26b1;Pax3;Zic4,
+318 Astro-NT NN,6,4,2,Itih3;Aqp4;Dbx2;Nr2f1,Agt;Prdm16
+319 Astro-TE NN,5,3,1,Gja1;Sox9;Nr2f1,Lhx2
+320 Astro-OLF NN,4,4,0,Gja1;Hs3st3a1;Lhx2;Prdm16,
+321 Astroependymal NN,6,4,2,Gfap;Zic4;Nr2f1;Slit2,Zfhx4;Slc7a11
+322 Tanycyte NN,3,3,0,Gpr50;Sox9;Nkx2-4,
+323 Ependymal NN,0,0,0,,
+324 Hypendymal NN,0,0,0,,
+325 CHOR NN,2,2,0,Kl;Lmx1a,
+326 OPC NN,0,0,0,,
+327 Oligo NN,3,3,0,Cldn11;Sox10;St18,
+328 OEC NN,3,3,0,Aqp1;Sox10;Bnc2,
+329 ABC NN,1,1,0,Bnc2,
+330 VLMC NN,1,1,0,Mafb,
+331 Peri NN,1,1,0,Kcnj8,
+332 SMC NN,2,2,0,Acta2;Sox6,
+333 Endo NN,0,0,0,,
+334 Microglia NN,2,2,0,Sall1;Fli1,
+335 BAM NN,4,3,0,Maf;Fli1;Trps1,
+336 Monocytes NN,0,0,0,,
+337 DC NN,0,0,0,,
+338 Lymphoid NN,0,0,0,,

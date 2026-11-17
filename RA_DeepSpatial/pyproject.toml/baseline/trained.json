@@ -1,0 +1,6 @@
+{
+  "checkpoint_sha256": "4b1c1ba82dacc43b8d5eeb9bc3d80563e772aeb9aff03da48c02a030754960f8",
+  "fixed_epochs": 100,
+  "backbone_epochs": 0,
+  "checkpoint_selection": "last_epoch_predeclared"
+}

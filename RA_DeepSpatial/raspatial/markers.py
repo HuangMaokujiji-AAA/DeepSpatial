@@ -22,14 +22,20 @@ def import_table(source, output, sheet=None, subclass_column=None, marker_column
     if source.suffix.lower() == '.csv':
         table = pd.read_csv(source)
     else:
+        if sheet is None:
+            with pd.ExcelFile(source) as book:
+                sheet = 'subclass_annotation' if 'subclass_annotation' in book.sheet_names else 0
         table = pd.read_excel(source, sheet_name=sheet or 0, header=header)
     normalized = {str(c).strip().lower().replace(' ', '_'): c for c in table.columns}
-    subclass_column = subclass_column or next((normalized[k] for k in ('subclass', 'subclass_label', 'subclass_name', 'subclass_id') if k in normalized), None)
+    subclass_column = subclass_column or next((normalized[k] for k in ('subclass_id_label', 'subclass', 'subclass_label', 'subclass_name', 'subclass_id') if k in normalized), None)
     if marker_columns is None:
-        marker_columns = [c for c in table.columns if str(c).strip().lower().replace(' ', '_') in ('gene', 'marker', 'markers', 'marker_genes', 'overall_marker_genes')]
+        marker_columns = [c for c in table.columns if str(c).strip().lower().replace(' ', '_') in
+                          ('gene', 'marker', 'markers', 'marker_genes', 'overall_marker_genes',
+                           'subclass.markers.combo', 'subclass.tf.markers.combo')]
     if subclass_column not in table or not marker_columns or any(c not in table for c in marker_columns):
         raise ValueError(f'Cannot identify subclass/positive-marker columns. Available: {list(table.columns)}. Use --inspect then --subclass-column/--marker-columns/--header explicitly.')
     rows = []
+    source_hash = digest(source)
     for _, row in table.iterrows():
         if pd.isna(row[subclass_column]):
             continue
@@ -38,12 +44,13 @@ def import_table(source, output, sheet=None, subclass_column=None, marker_column
                 continue
             for gene in re.split(r'[,;|\s]+', str(row[column]).strip()):
                 # Keep symbols/Ensembl IDs; do not reinterpret plus/minus or annotation prose.
-                if re.fullmatch(r'[A-Za-z][A-Za-z0-9.\-]*', gene):
+                if re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9.\-]*', gene) and re.search(r'[A-Za-z]', gene):
                     provenance = str(row.get('source', '')).strip()
                     provenance = provenance if provenance and provenance != 'nan' else ('Yao2023_Table7' if '41586_2023_6812_MOESM8' in source.stem else 'external_table_unverified')
                     rows.append(dict(subclass=str(row[subclass_column]).strip(), gene=gene,
                                      source=provenance,
-                                     source_sha256=digest(source), source_column=str(column)))
+                                     source_sha256=source_hash, source_sheet=str(sheet) if sheet is not None else '',
+                                     source_column=str(column)))
     result = pd.DataFrame(rows).drop_duplicates(['subclass', 'gene'])
     if result.empty:
         raise ValueError('No positive marker records imported.')

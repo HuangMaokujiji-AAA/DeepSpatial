@@ -1,0 +1,625 @@
+{
+  "config": {
+    "input_glob": "../data/Zhuang-ABCA-2/sec_*.h5ad",
+    "seed": 42,
+    "split": {
+      "validation": [
+        "sec_015",
+        "sec_034",
+        "sec_059"
+      ],
+      "test": [
+        "sec_008",
+        "sec_022",
+        "sec_040",
+        "sec_053",
+        "sec_066"
+      ]
+    },
+    "data": {
+      "spatial_key": "spatial",
+      "z_key": "z",
+      "label_key": "subclass",
+      "coordinate_to_um": 1000.0,
+      "niche_genes": 64,
+      "cache_slices": 8
+    },
+    "markers": {
+      "path": "resources/markers.csv",
+      "max_per_type": 8,
+      "min_per_type": 1
+    },
+    "niche": {
+      "radius_um": 100.0,
+      "sigma_um": 50.0
+    },
+    "pairing": {
+      "n_samples": 200000,
+      "alpha_spatial": 0.5,
+      "local_reg": 0.05,
+      "raw_reg": 0.8,
+      "tau": 0.05,
+      "radius_um": 300.0,
+      "spatial_scale_um": 150.0,
+      "reference_gap_um": 400.0,
+      "max_iter": 300,
+      "tolerance": 1e-05,
+      "block_size": 256
+    },
+    "A": {
+      "kappa": 0.5,
+      "risk_fraction": 0.2,
+      "weight_cap": 10.0
+    },
+    "model": {
+      "patch_size": 16,
+      "hidden_size": 256,
+      "depth": 6,
+      "num_heads": 8,
+      "mlp_ratio": 4.0
+    },
+    "residual": {
+      "hidden_size": 128
+    },
+    "D": {
+      "common_gate": 0.25,
+      "max_rms": {
+        "x": 0.05,
+        "g": 0.1,
+        "c": 0.05
+      },
+      "anchor_lambda": 0.1
+    },
+    "C": {
+      "every_steps": 10,
+      "cells": 32,
+      "rollout_steps": 4,
+      "bandwidth_um": 200.0,
+      "grid_um": 300.0,
+      "expression_weight": 0.1,
+      "spatial_weight": 0.05
+    },
+    "training": {
+      "epochs": 100,
+      "batch_size": 128,
+      "lr": 0.0002,
+      "weight_decay": 1e-05,
+      "ema_decay": 0.999,
+      "lambda_g": 0.1,
+      "lambda_c": 10.0,
+      "gradient_clip": 10.0
+    },
+    "reconstruction": {
+      "steps": 50,
+      "chunk_size": 128,
+      "solver": "rk4",
+      "atol": 1e-05,
+      "rtol": 1e-05,
+      "sparsify": true,
+      "export_step_um": 200.0
+    },
+    "evaluation": {
+      "rare_fraction": 0.01,
+      "radii_um": [
+        50,
+        100
+      ],
+      "spatial_bin_um": 100.0,
+      "niche_radius_um": 100.0,
+      "matching_cap_um": 100.0,
+      "max_assignment_entries": 4000000
+    }
+  },
+  "split": [
+    {
+      "section": "sec_001",
+      "filename": "sec_001.h5ad",
+      "z_um": 0.0,
+      "n_cells": 4785,
+      "role": "train"
+    },
+    {
+      "section": "sec_002",
+      "filename": "sec_002.h5ad",
+      "z_um": 112.1084790017764,
+      "n_cells": 5204,
+      "role": "train"
+    },
+    {
+      "section": "sec_003",
+      "filename": "sec_003.h5ad",
+      "z_um": 312.1084790017764,
+      "n_cells": 4775,
+      "role": "train"
+    },
+    {
+      "section": "sec_004",
+      "filename": "sec_004.h5ad",
+      "z_um": 512.1345579405671,
+      "n_cells": 9853,
+      "role": "train"
+    },
+    {
+      "section": "sec_005",
+      "filename": "sec_005.h5ad",
+      "z_um": 738.6324676767006,
+      "n_cells": 10935,
+      "role": "train"
+    },
+    {
+      "section": "sec_006",
+      "filename": "sec_006.h5ad",
+      "z_um": 964.0280704163891,
+      "n_cells": 12636,
+      "role": "train"
+    },
+    {
+      "section": "sec_007",
+      "filename": "sec_007.h5ad",
+      "z_um": 1215.3625989915965,
+      "n_cells": 11697,
+      "role": "train"
+    },
+    {
+      "section": "sec_008",
+      "filename": "sec_008.h5ad",
+      "z_um": 1430.168609197903,
+      "n_cells": 9208,
+      "role": "test",
+      "context_left": "sec_007",
+      "context_right": "sec_009"
+    },
+    {
+      "section": "sec_009",
+      "filename": "sec_009.h5ad",
+      "z_um": 1670.0667686633465,
+      "n_cells": 12610,
+      "role": "train"
+    },
+    {
+      "section": "sec_010",
+      "filename": "sec_010.h5ad",
+      "z_um": 1870.180325496392,
+      "n_cells": 10839,
+      "role": "train"
+    },
+    {
+      "section": "sec_011",
+      "filename": "sec_011.h5ad",
+      "z_um": 2095.8315673024563,
+      "n_cells": 11545,
+      "role": "train"
+    },
+    {
+      "section": "sec_012",
+      "filename": "sec_012.h5ad",
+      "z_um": 2165.2264325502747,
+      "n_cells": 8571,
+      "role": "train"
+    },
+    {
+      "section": "sec_013",
+      "filename": "sec_013.h5ad",
+      "z_um": 2290.9967664843807,
+      "n_cells": 6708,
+      "role": "train"
+    },
+    {
+      "section": "sec_014",
+      "filename": "sec_014.h5ad",
+      "z_um": 2471.1096664878623,
+      "n_cells": 9322,
+      "role": "train"
+    },
+    {
+      "section": "sec_015",
+      "filename": "sec_015.h5ad",
+      "z_um": 2620.532541500958,
+      "n_cells": 8977,
+      "role": "validation",
+      "context_left": "sec_014",
+      "context_right": "sec_016"
+    },
+    {
+      "section": "sec_016",
+      "filename": "sec_016.h5ad",
+      "z_um": 2773.455124855454,
+      "n_cells": 10776,
+      "role": "train"
+    },
+    {
+      "section": "sec_017",
+      "filename": "sec_017.h5ad",
+      "z_um": 2937.0216801818183,
+      "n_cells": 9823,
+      "role": "train"
+    },
+    {
+      "section": "sec_018",
+      "filename": "sec_018.h5ad",
+      "z_um": 3083.89549778682,
+      "n_cells": 9278,
+      "role": "train"
+    },
+    {
+      "section": "sec_019",
+      "filename": "sec_019.h5ad",
+      "z_um": 3291.1698082359626,
+      "n_cells": 13825,
+      "role": "train"
+    },
+    {
+      "section": "sec_020",
+      "filename": "sec_020.h5ad",
+      "z_um": 3462.107965030484,
+      "n_cells": 14189,
+      "role": "train"
+    },
+    {
+      "section": "sec_021",
+      "filename": "sec_021.h5ad",
+      "z_um": 3644.828925599976,
+      "n_cells": 14135,
+      "role": "train"
+    },
+    {
+      "section": "sec_022",
+      "filename": "sec_022.h5ad",
+      "z_um": 3899.123239376911,
+      "n_cells": 16305,
+      "role": "test",
+      "context_left": "sec_021",
+      "context_right": "sec_023"
+    },
+    {
+      "section": "sec_023",
+      "filename": "sec_023.h5ad",
+      "z_um": 4100.312474090814,
+      "n_cells": 23473,
+      "role": "train"
+    },
+    {
+      "section": "sec_025",
+      "filename": "sec_025.h5ad",
+      "z_um": 4541.891817407238,
+      "n_cells": 30931,
+      "role": "train"
+    },
+    {
+      "section": "sec_026",
+      "filename": "sec_026.h5ad",
+      "z_um": 4747.254158851525,
+      "n_cells": 22389,
+      "role": "train"
+    },
+    {
+      "section": "sec_027",
+      "filename": "sec_027.h5ad",
+      "z_um": 4930.996006505678,
+      "n_cells": 20702,
+      "role": "train"
+    },
+    {
+      "section": "sec_028",
+      "filename": "sec_028.h5ad",
+      "z_um": 5163.844932117076,
+      "n_cells": 30303,
+      "role": "train"
+    },
+    {
+      "section": "sec_030",
+      "filename": "sec_030.h5ad",
+      "z_um": 5599.783393380513,
+      "n_cells": 33255,
+      "role": "train"
+    },
+    {
+      "section": "sec_031",
+      "filename": "sec_031.h5ad",
+      "z_um": 5741.753580029559,
+      "n_cells": 28795,
+      "role": "train"
+    },
+    {
+      "section": "sec_032",
+      "filename": "sec_032.h5ad",
+      "z_um": 5913.2501250701225,
+      "n_cells": 22932,
+      "role": "train"
+    },
+    {
+      "section": "sec_033",
+      "filename": "sec_033.h5ad",
+      "z_um": 6083.2942636417465,
+      "n_cells": 28975,
+      "role": "train"
+    },
+    {
+      "section": "sec_034",
+      "filename": "sec_034.h5ad",
+      "z_um": 6223.224862657571,
+      "n_cells": 35738,
+      "role": "validation",
+      "context_left": "sec_033",
+      "context_right": "sec_035"
+    },
+    {
+      "section": "sec_035",
+      "filename": "sec_035.h5ad",
+      "z_um": 6386.14821702683,
+      "n_cells": 19607,
+      "role": "train"
+    },
+    {
+      "section": "sec_036",
+      "filename": "sec_036.h5ad",
+      "z_um": 6623.366510799895,
+      "n_cells": 33378,
+      "role": "train"
+    },
+    {
+      "section": "sec_037",
+      "filename": "sec_037.h5ad",
+      "z_um": 6825.16653548007,
+      "n_cells": 23377,
+      "role": "train"
+    },
+    {
+      "section": "sec_039",
+      "filename": "sec_039.h5ad",
+      "z_um": 7337.94907458192,
+      "n_cells": 36376,
+      "role": "train"
+    },
+    {
+      "section": "sec_040",
+      "filename": "sec_040.h5ad",
+      "z_um": 7481.145156577951,
+      "n_cells": 21026,
+      "role": "test",
+      "context_left": "sec_039",
+      "context_right": "sec_041"
+    },
+    {
+      "section": "sec_041",
+      "filename": "sec_041.h5ad",
+      "z_um": 7661.287532861484,
+      "n_cells": 30499,
+      "role": "train"
+    },
+    {
+      "section": "sec_042",
+      "filename": "sec_042.h5ad",
+      "z_um": 7852.157057151604,
+      "n_cells": 21243,
+      "role": "train"
+    },
+    {
+      "section": "sec_044",
+      "filename": "sec_044.h5ad",
+      "z_um": 8218.838094766614,
+      "n_cells": 29605,
+      "role": "train"
+    },
+    {
+      "section": "sec_045",
+      "filename": "sec_045.h5ad",
+      "z_um": 8401.35810251962,
+      "n_cells": 29628,
+      "role": "train"
+    },
+    {
+      "section": "sec_046",
+      "filename": "sec_046.h5ad",
+      "z_um": 8581.738510792551,
+      "n_cells": 18874,
+      "role": "train"
+    },
+    {
+      "section": "sec_047",
+      "filename": "sec_047.h5ad",
+      "z_um": 8757.082993991091,
+      "n_cells": 27773,
+      "role": "train"
+    },
+    {
+      "section": "sec_048",
+      "filename": "sec_048.h5ad",
+      "z_um": 8919.136914469944,
+      "n_cells": 16055,
+      "role": "train"
+    },
+    {
+      "section": "sec_049",
+      "filename": "sec_049.h5ad",
+      "z_um": 9111.45296168016,
+      "n_cells": 27373,
+      "role": "train"
+    },
+    {
+      "section": "sec_050",
+      "filename": "sec_050.h5ad",
+      "z_um": 9305.556829321004,
+      "n_cells": 29079,
+      "role": "train"
+    },
+    {
+      "section": "sec_051",
+      "filename": "sec_051.h5ad",
+      "z_um": 9489.906788112092,
+      "n_cells": 17703,
+      "role": "train"
+    },
+    {
+      "section": "sec_052",
+      "filename": "sec_052.h5ad",
+      "z_um": 9705.948781660669,
+      "n_cells": 22010,
+      "role": "train"
+    },
+    {
+      "section": "sec_053",
+      "filename": "sec_053.h5ad",
+      "z_um": 9898.38499508499,
+      "n_cells": 14691,
+      "role": "test",
+      "context_left": "sec_052",
+      "context_right": "sec_054"
+    },
+    {
+      "section": "sec_054",
+      "filename": "sec_054.h5ad",
+      "z_um": 10057.864110711009,
+      "n_cells": 24456,
+      "role": "train"
+    },
+    {
+      "section": "sec_055",
+      "filename": "sec_055.h5ad",
+      "z_um": 10234.357254130691,
+      "n_cells": 22395,
+      "role": "train"
+    },
+    {
+      "section": "sec_056",
+      "filename": "sec_056.h5ad",
+      "z_um": 10384.50992144713,
+      "n_cells": 12602,
+      "role": "train"
+    },
+    {
+      "section": "sec_057",
+      "filename": "sec_057.h5ad",
+      "z_um": 10567.640341533097,
+      "n_cells": 23444,
+      "role": "train"
+    },
+    {
+      "section": "sec_058",
+      "filename": "sec_058.h5ad",
+      "z_um": 10756.805303012969,
+      "n_cells": 14253,
+      "role": "train"
+    },
+    {
+      "section": "sec_059",
+      "filename": "sec_059.h5ad",
+      "z_um": 10944.922782908603,
+      "n_cells": 22538,
+      "role": "validation",
+      "context_left": "sec_058",
+      "context_right": "sec_060"
+    },
+    {
+      "section": "sec_060",
+      "filename": "sec_060.h5ad",
+      "z_um": 11076.142936578844,
+      "n_cells": 16642,
+      "role": "train"
+    },
+    {
+      "section": "sec_061",
+      "filename": "sec_061.h5ad",
+      "z_um": 11237.51553968298,
+      "n_cells": 23092,
+      "role": "train"
+    },
+    {
+      "section": "sec_062",
+      "filename": "sec_062.h5ad",
+      "z_um": 11437.489512161203,
+      "n_cells": 18683,
+      "role": "train"
+    },
+    {
+      "section": "sec_063",
+      "filename": "sec_063.h5ad",
+      "z_um": 11637.489512161204,
+      "n_cells": 20041,
+      "role": "train"
+    },
+    {
+      "section": "sec_065",
+      "filename": "sec_065.h5ad",
+      "z_um": 12037.489512161204,
+      "n_cells": 17782,
+      "role": "train"
+    },
+    {
+      "section": "sec_066",
+      "filename": "sec_066.h5ad",
+      "z_um": 12237.489512161204,
+      "n_cells": 19012,
+      "role": "test",
+      "context_left": "sec_065",
+      "context_right": "sec_067"
+    },
+    {
+      "section": "sec_067",
+      "filename": "sec_067.h5ad",
+      "z_um": 12437.489512161203,
+      "n_cells": 19375,
+      "role": "train"
+    },
+    {
+      "section": "sec_070",
+      "filename": "sec_070.h5ad",
+      "z_um": 13037.489512161204,
+      "n_cells": 10573,
+      "role": "train"
+    },
+    {
+      "section": "sec_071",
+      "filename": "sec_071.h5ad",
+      "z_um": 13237.489512161204,
+      "n_cells": 13804,
+      "role": "train"
+    },
+    {
+      "section": "sec_072",
+      "filename": "sec_072.h5ad",
+      "z_um": 13437.489512161203,
+      "n_cells": 11038,
+      "role": "train"
+    },
+    {
+      "section": "sec_073",
+      "filename": "sec_073.h5ad",
+      "z_um": 13637.489512161204,
+      "n_cells": 15892,
+      "role": "train"
+    }
+  ],
+  "source_sha256": {
+    "raspatial/__init__.py": "21ec9e6731f9f0a1f33a29e5e435ef91fb92b8163c3476c259ccef25c1b5abf5",
+    "raspatial/data.py": "96104cece5722f34f7f21488da9edf17076dda99980504f82d01fc47ec209763",
+    "raspatial/dataset.py": "0162c0d00470be62edd54347cd4890d0c16f29072b298a710d780b080ed0e990",
+    "raspatial/evaluation.py": "80e6e1cc1e90a17b9244717468b6348e9c24577fae7b0ee88fbd6bf11a36a958",
+    "raspatial/experiment.py": "5e8bb90a1fce5d2d4e7a0bc461e0d3e8444c7bc3726842408e48289021c5eae1",
+    "raspatial/io.py": "9a1bf35c51f2a31a26dd8719084fb917f705ed2dfc13ebecdff8b13c7289b577",
+    "raspatial/markers.py": "ad934c5c08000609bcbe6e1f489560a37dcecb8d3a1c0c67e3b83ca041547960",
+    "raspatial/model.py": "90957f414b7caf2c52f7050cb5937a6f3f82d55bb00114189354cb32bd6b3827",
+    "raspatial/reconstruction.py": "6b847a4dc1212bde7c9c4bcd2e4a5fe8dd950ac437b532034b5cc446d67d2cc0",
+    "raspatial/training.py": "3a93eb70b9ef2250d00a0aefd94f3b07dc2821c6b0e989b8e3b30aea832f7b93",
+    "raspatial/transport.py": "2931c4344fef14f5d56a45f0e9493a8400a399f7c5842e921dab16e5e1ccd508",
+    "raspatial/vendor/__init__.py": "bef22e83a9fb1c2ae6b60d2793c11c18096f6c75b72beb6d10b51ce9f6862fe4",
+    "raspatial/vendor/commons.py": "8ba68eaf7e0d792af1568c07193aaf47e3bfda49e715dca793462ebb11765df7",
+    "raspatial/vendor/git.py": "3de875166f2409166d0f851b5010ec8ac87615c44f4df40f14c96d41a7e1de31",
+    "raspatial/vendor/sampling.py": "fdfce077845126ec424cb80f3fd50081b2f51e53cf46634de9957325045352d3",
+    "examples/run_abca2.py": "54ec185763589e22a8dc851e9f870d0977cfad7aad8eba5c8dba08ee94390b52",
+    "scripts/import_markers.py": "3762597aefcea67cb31682e6fc135346d14ae3421fffb18f3e7992fcdf611074",
+    "scripts/inspect_data.py": "04581de9ee3143490adab644679c7eea055b20d7b839c50555b14107e7dedd7d",
+    "scripts/smoke_dimensions.py": "f29f712610d49095fe4749d03f24431e51064bd27dd6b75475eed82ebdfe0828"
+  },
+  "prepared_identity": "65fc859ba70c426a889435ba6fe4973fee154501aa2d65444fa855fa9deabb02",
+  "state_sha256": "b1f61770d191ef638435d96d3b4459dc11f29a2ee946d1e586ff8601ac80b92c",
+  "marker_sha256": "d216aef413d10e47bdd39609d3b2f3ea300e263274280fd6fe129507ade76d9f",
+  "arm": "control",
+  "options": {
+    "base": true,
+    "A": false,
+    "B": false,
+    "C": false,
+    "D": false
+  }
+}

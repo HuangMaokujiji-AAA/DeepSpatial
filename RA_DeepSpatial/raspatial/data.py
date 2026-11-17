@@ -1,5 +1,5 @@
 """Section-level isolation and disk-backed, train-only statistics and neighborhoods."""
-from collections import OrderedDict
+from collections import Counter, OrderedDict
 import glob
 from pathlib import Path
 
@@ -58,9 +58,21 @@ def read_section(path, config, expression=True):
 
 def make_split(project, config):
     """Only filenames, physical geometry and row counts are inspected for split planning."""
-    paths = sorted(Path(p).resolve() for p in glob.glob(str(Path(project) / config['input_glob'])))
-    if len(paths) < 5 or len({p.stem for p in paths}) != len(paths):
-        raise ValueError('Need unique section filenames and at least five sections.')
+    pattern = str((Path(project) / config['input_glob']).resolve())
+    paths = sorted(Path(p).resolve() for p in glob.glob(pattern, recursive=True) if Path(p).is_file())
+    duplicates = [name for name, count in Counter(p.stem for p in paths).items() if count > 1]
+    if len(paths) < 5:
+        raise ValueError(
+            f'Only {len(paths)} H5AD files matched; need at least five sections.\n'
+            f'Project directory: {Path(project).resolve()}\n'
+            f'Configured input_glob: {config["input_glob"]}\n'
+            f'Resolved search pattern: {pattern}\n'
+            f'Matched files: {[str(p) for p in paths]}\n'
+            'Set input_glob to the actual server dataset directory (absolute paths are supported). '
+            'Use **/sec_*.h5ad only if the files are nested, and avoid matching other datasets.')
+    if duplicates:
+        raise ValueError(f'Duplicate section filenames matched by {pattern}: {duplicates}. '
+                         'Narrow input_glob to one Zhuang-ABCA-2 dataset copy.')
     validation, test = config['split']['validation'], config['split']['test']
     if len(set(validation + test)) != len(validation + test):
         raise ValueError('Validation and test section names must be unique and disjoint.')
@@ -70,8 +82,12 @@ def make_split(project, config):
         rows.append(dict(section=path.stem, filename=path.name, z_um=section['z_um'], n_cells=section['n_cells'],
                          role='validation' if path.stem in validation else 'test' if path.stem in test else 'train'))
     rows.sort(key=lambda row: row['z_um'])
-    if not set(validation + test).issubset({row['section'] for row in rows}) or np.any(np.diff([r['z_um'] for r in rows]) <= 0):
-        raise ValueError('Missing held-out section or duplicate/non-increasing physical depths.')
+    missing = sorted(set(validation + test)-{row['section'] for row in rows})
+    if missing:
+        raise ValueError(f'Configured held-out sections are missing: {missing}. Matched {len(paths)} files using {pattern}. '
+                         'Check the dataset copy and filenames; do not silently change the fixed split.')
+    if np.any(np.diff([r['z_um'] for r in rows]) <= 0):
+        raise ValueError('Duplicate/non-increasing physical section depths.')
     train = [r for r in rows if r['role'] == 'train']
     for row in rows:
         if row['role'] != 'train':

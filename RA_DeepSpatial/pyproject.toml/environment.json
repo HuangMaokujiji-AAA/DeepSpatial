@@ -1,0 +1,7 @@
+{
+  "python": "3.10.12",
+  "torch": "2.3.0a0+40ec155e58.nv24.03",
+  "device": "cuda:0",
+  "cuda": "12.4",
+  "gpu": "NVIDIA GeForce RTX 4090 D"
+}

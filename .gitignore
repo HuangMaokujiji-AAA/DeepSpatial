@@ -1,6 +1,23 @@
 # Data & output
-data/
+data/*
+!data/download/
+data/download/*
+!data/download/*.ipynb
+!data/download/*.py
+!data/download/README.md
 output/
+outputs/
+checkpoints/
+
+# Model weights and binary datasets (keep locally, never commit)
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.onnx
+*.h5ad
+*.h5
+*.hdf5
 
 # Python cache
 __pycache__/

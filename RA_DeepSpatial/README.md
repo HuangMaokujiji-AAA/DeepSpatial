@@ -40,7 +40,7 @@ python tests/test_pipeline.py
 python scripts/inspect_data.py
 ```
 
-**先下载并导入外部 Marker**，详见 [resources/README.md](resources/README.md)。缺失 Marker 时正式8配置训练会在准备大型缓存之前报错，不会用测试切片筛基因，也不会静默把 C 关闭。
+**外部 Marker 已在本地生成**：上传 `resources/markers.csv` 到服务器同名位置即可，不必在服务器重新读取XLSX或安装Excel转换依赖。来源与重新生成方法见 [resources/README.md](resources/README.md)。已核实实际 `subclass_annotation` 工作表；候选表含338个subclass、1,892条类型–基因记录，面板与训练表达筛选后覆盖327个类型、其中310/319个稀有类型，详见 `resources/marker_coverage.csv`。未覆盖类型仍保留在其余训练和评价中。缺失CSV时正式8配置训练会在准备大型缓存之前报错，不会用测试切片筛基因，也不会静默把C关闭。
 
 GPU0、24GB 的默认入口是 `examples/run_abca2.ipynb`，每个阶段使用独立 Python 子进程，避免 Notebook 已初始化 CUDA 后设备变量不生效。也可顺序运行：
 

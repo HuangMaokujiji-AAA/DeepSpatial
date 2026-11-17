@@ -19,7 +19,11 @@ import torch
 
 from raspatial.data import make_split, prepare, read_section, SliceStore
 from raspatial.dataset import PairDataset, interpolate
-from raspatial.evaluation import assignment
+from raspatial.evaluation import (
+    assignment, build_spatial_grid, compare_autocorrelation, evaluate,
+    fit_expression_probe, nhood_enrichment_zscores, sliced_w2_distance,
+    spatial_autocorrelation_batch, ssim_2d_batch, w2_distance,
+)
 from raspatial.experiment import ARMS, run, verify_freeze
 from raspatial.io import read_json
 from raspatial.markers import load_markers, MarkerTasks, import_table
@@ -60,6 +64,23 @@ def fixture(root):
 
 
 class PipelineTests(unittest.TestCase):
+    def test_input_glob_reports_resolved_path_and_recursive_duplicates(self):
+        with tempfile.TemporaryDirectory(dir=PROJECT) as temp:
+            root = Path(temp); cfg = fixture(root)
+            missing = deepcopy(cfg); missing['input_glob'] = str(root/'not_uploaded/sec_*.h5ad')
+            with self.assertRaisesRegex(ValueError, 'Only 0 H5AD files matched') as error:
+                make_split(PROJECT, missing)
+            self.assertIn(str(root/'not_uploaded/sec_*.h5ad'), str(error.exception))
+            nested = root/'input/subfolder'; nested.mkdir()
+            (root/'input/sec_000.h5ad').rename(nested/'sec_000.h5ad')
+            cfg['input_glob'] = str(root/'input/**/sec_*.h5ad')
+            rows, _ = make_split(PROJECT, cfg)
+            self.assertEqual(len(rows), 12)
+            import shutil
+            shutil.copyfile(nested/'sec_000.h5ad', root/'input/sec_000.h5ad')
+            with self.assertRaisesRegex(ValueError, 'Duplicate section filenames'):
+                make_split(PROJECT, cfg)
+
     def test_uot_equivalence_and_zero_support(self):
         cost = np.array([[.1, .2, .8], [.8, .3, .1]])
         reg, tau = .8, .05
@@ -162,7 +183,9 @@ class PipelineTests(unittest.TestCase):
                 run(PROJECT, cfg, cache, out, stage='all', device='cpu')
             frozen = read_json(out/'frozen_test_protocol.json')
             self.assertEqual(set(frozen['checkpoints']), set(ARMS))
+            self.assertIn('expression_probe_sha256', frozen)
             self.assertTrue((out/'test_summary.csv').exists())
+            self.assertTrue((out/'test_main_table.csv').exists())
             completion = pd.read_csv(out/'completion.csv')
             self.assertEqual(len(completion), 32)
             self.assertTrue(completion.evaluated.all())
@@ -173,6 +196,11 @@ class PipelineTests(unittest.TestCase):
             pred = ad.read_h5ad(out/'full/test/sec_005/prediction.h5ad')
             self.assertEqual(pred.uns['generation']['coordinate_units'], 'um')
             self.assertIn('expression_before_sparsification', pred.layers)
+            sample_metrics = read_json(out/'full/test/sec_005/metrics.json')
+            for expected_key in ('rare_macro_ospa1_um', 'rare_macro_verified_one_to_one_f1_50um',
+                                 'rare_macro_w2_distance_um', 'rare_macro_unbiased_niche_js',
+                                 'global_top_hvg_grid_pcc', 'global_top_hvg_grid_ssim'):
+                self.assertIn(expected_key, sample_metrics)
             run(PROJECT, cfg, cache, out, stage='test', device='cpu', resume=True)
             run(PROJECT, cfg, cache, out, stage='all', device='cpu', resume=True)
             with (out/'full/last.pt').open('ab') as stream:
@@ -189,6 +217,19 @@ class PipelineTests(unittest.TestCase):
             self.assertEqual(set(result.gene), {'A', 'B', 'C', 'D', 'E'})
             with self.assertRaises(FileExistsError):
                 import_table(source, root/'markers.csv')
+
+    def test_official_subclass_sheet_and_digit_leading_gene(self):
+        with tempfile.TemporaryDirectory(dir=PROJECT) as temp:
+            root = Path(temp); source = root/'41586_2023_6812_MOESM8_ESM.xlsx'
+            with pd.ExcelWriter(source, engine='openpyxl') as writer:
+                pd.DataFrame({'subclass_label': ['wrong'], 'cluster.markers.combo': ['WrongGene']}).to_excel(writer, sheet_name='cluster_annotation', index=False)
+                pd.DataFrame({'subclass_id_label': ['001 actual'], 'subclass.markers.combo': ['2610307P16Rik,A'],
+                              'subclass.tf.markers.combo': ['B']}).to_excel(writer, sheet_name='subclass_annotation', index=False)
+            result = import_table(source, root/'markers.csv')
+            self.assertEqual(set(result.gene), {'2610307P16Rik', 'A', 'B'})
+            self.assertEqual(set(result.subclass), {'001 actual'})
+            self.assertEqual(set(result.source_sheet), {'subclass_annotation'})
+            self.assertEqual(set(result.source), {'Yao2023_Table7'})
 
     def test_epoch_resume_restores_marker_and_anchor_random_streams(self):
         with tempfile.TemporaryDirectory(dir=PROJECT) as temp:
@@ -216,6 +257,110 @@ class PipelineTests(unittest.TestCase):
             actual = fit(model(), dataset, cfg, root/'interrupted', state, torch.device('cpu'), {'test': 'resume'}, tasks(), anchors, resume=True)
             for key in expected.state_dict():
                 torch.testing.assert_close(actual.state_dict()[key], expected.state_dict()[key], rtol=0, atol=0)
+
+    def test_five_dimensional_evaluation_metrics_and_anti_gaming(self):
+        rng = np.random.default_rng(123)
+        # 1. Exact W2 (POT vs HiGHS LP fallback) and Sliced W2
+        a = rng.uniform(0, 100, (4, 2))
+        b = rng.uniform(10, 120, (7, 2))
+        self.assertAlmostEqual(w2_distance(a, b, use_pot=True), w2_distance(a, b, use_pot=False), places=7)
+        self.assertAlmostEqual(w2_distance(a, a, use_pot=False), 0.0, places=7)
+        self.assertAlmostEqual(sliced_w2_distance(a, a), 0.0, places=7)
+        self.assertGreater(w2_distance(a, a + 50.0, use_pot=False), 49.9)
+
+        # 2. 2D Grid SSIM and Moran's I / Geary's C vs brute force
+        xy_t = np.array([[x * 10.0 + 1.0, y * 10.0 + 1.0] for x in range(4) for y in range(4)])
+        grid = build_spatial_grid(xy_t, xy_t, 10.0)
+        signal = np.array([1.0 if i < 8 else 0.0 for i in range(16)], dtype=np.float64)
+        self.assertAlmostEqual(float(ssim_2d_batch(signal, signal, grid)[0]), 1.0, places=9)
+        self.assertLess(float(ssim_2d_batch(signal, 1.0 - signal, grid)[0]), 0.5)
+        moran, geary, valid = spatial_autocorrelation_batch(signal, grid['w_queen'])
+        self.assertTrue(bool(valid[0]))
+        w_dense = grid['w_queen'].toarray()
+        z = signal - signal.mean()
+        s0 = w_dense.sum()
+        expected_moran = (len(signal) / s0) * float(z @ w_dense @ z) / float(z @ z)
+        expected_geary = ((len(signal) - 1) / (2.0 * s0)) * float((w_dense * (signal[:, None] - signal[None, :]) ** 2).sum()) / float(z @ z)
+        self.assertAlmostEqual(float(moran[0]), expected_moran, places=9)
+        self.assertAlmostEqual(float(geary[0]), expected_geary, places=9)
+        zero_cmp = compare_autocorrelation(signal, np.zeros_like(signal), grid['w_queen'])
+        self.assertAlmostEqual(float(zero_cmp['moran_pred'][0]), 0.0, places=9)
+        self.assertAlmostEqual(float(zero_cmp['moran_abs_error'][0]), abs(expected_moran), places=9)
+
+        # 3. Analytical Squidpy permutation Z-scores vs Monte Carlo permutations
+        xy_perm = rng.uniform(0, 60, (40, 2))
+        labels_perm = np.array(['A'] * 25 + ['B'] * 10 + ['C'] * 5)
+        cls_map = {'A': 0, 'B': 1, 'C': 2}
+        z_exact, _ = nhood_enrichment_zscores(xy_perm, labels_perm, cls_map, radius=20.0)
+        from scipy.spatial import cKDTree
+        adj = (cKDTree(xy_perm).sparse_distance_matrix(cKDTree(xy_perm), 20.0).toarray() > 0).astype(float)
+        np.fill_diagonal(adj, 0.0)
+        codes = np.array([cls_map[k] for k in labels_perm])
+        onehot_obs = np.eye(3)[codes]
+        obs_counts = onehot_obs.T @ adj @ onehot_obs
+        mc = np.empty((4000, 3, 3))
+        for it in range(4000):
+            oh = np.eye(3)[rng.permutation(codes)]
+            mc[it] = oh.T @ adj @ oh
+        z_mc = (obs_counts - mc.mean(0)) / np.maximum(mc.std(0), 1e-9)
+        np.testing.assert_allclose(z_exact, z_mc, atol=0.12)
+
+        # 4. Anti-survivorship-bias niche JSD & anti-circularity Verified Spatial F1
+        with tempfile.TemporaryDirectory(dir=PROJECT) as temp:
+            root = Path(temp); cfg = fixture(root)
+            # Make common vs rare expression sharply distinct so probe cleanly separates them
+            for p in sorted((root/'input').glob('sec_*.h5ad')):
+                sec_ad = ad.read_h5ad(p)
+                mat = np.zeros((sec_ad.n_obs, 6), dtype=np.float32)
+                mat[:-1, 3:] = 8.0   # 001 common expresses g3..g5
+                mat[-1, :3] = 12.0   # 002 rare expresses g0..g2
+                # Add a third background niche type '003 niche' far from rare cell (50, 50)
+                xy_sec = np.asarray(sec_ad.obsm['spatial'], dtype=np.float64)
+                xy_sec[:20] = rng.uniform(0, 12, (20, 2))
+                xy_sec[20:99] = rng.uniform(42, 58, (79, 2))
+                sub = np.array(['003 stroma'] * 20 + ['001 common'] * 79 + ['002 rare'])
+                mat[:20, :] = 1.0
+                sec_ad.X = mat
+                sec_ad.obsm['spatial'] = xy_sec
+                sec_ad.obs['subclass'] = sub
+                sec_ad.write_h5ad(p)
+            state, splits, paths = prepare(PROJECT, cfg, root/'cache')
+            store = SliceStore(root/'cache', state, 4)
+            markers, independent, _ = load_markers(root/'markers.csv', state, cfg)
+            probe, _ = fit_expression_probe(store, state, cfg, torch.device('cpu'))
+            truth = read_section(paths['sec_005'], cfg)
+
+            # Build prediction: 1 matched rare cell in '001 common' niche + 3 misplaced rare cells in '003 stroma' niche
+            px = np.vstack((truth['physical'], np.array([[5.0, 5.0], [6.0, 6.0], [7.0, 7.0]])))
+            pg = np.vstack((truth['g'], np.tile(truth['g'][-1], (3, 1))))
+            py = np.concatenate((truth['labels'], np.array(['002 rare'] * 3)))
+            pred_good_expr = ad.AnnData(
+                X=sparse.csr_matrix(pg),
+                obs=pd.DataFrame({'cell_class': py, 'generation_mode': 'ode'}, index=[f'p{i}' for i in range(len(py))]),
+                var=pd.DataFrame({'gene_symbol': state['symbols']}, index=state['genes']),
+                obsm={'spatial': px},
+                layers={'expression_before_sparsification': pg.copy()},
+            )
+            m1, t1, _ = evaluate(truth, pred_good_expr, state, cfg, markers, independent, probe=probe)
+            rare_row1 = t1.set_index('subclass').loc['002 rare']
+            # Matched-pair local_composition_js only sees the 1 matched cell (~0), while unbiased_niche_js catches the 3 misplaced cells!
+            self.assertLess(rare_row1['local_composition_js'], 1e-4)
+            self.assertGreater(rare_row1['unbiased_niche_js'], 0.08)
+
+            # Now test label-inheritance circularity: exact geometry & labels of truth, but rare cell expression collapses to common!
+            pg_collapsed = truth['g'].copy()
+            pg_collapsed[-1] = truth['g'][50]  # common expression profile
+            pred_collapsed = ad.AnnData(
+                X=sparse.csr_matrix(pg_collapsed),
+                obs=pd.DataFrame({'cell_class': truth['labels'], 'generation_mode': 'ode'}, index=[f'q{i}' for i in range(len(truth['labels']))]),
+                var=pd.DataFrame({'gene_symbol': state['symbols']}, index=state['genes']),
+                obsm={'spatial': truth['physical'].copy()},
+                layers={'expression_before_sparsification': pg_collapsed.copy()},
+            )
+            _, t2, _ = evaluate(truth, pred_collapsed, state, cfg, markers, independent, probe=probe)
+            rare_row2 = t2.set_index('subclass').loc['002 rare']
+            self.assertAlmostEqual(rare_row2['one_to_one_f1_50um'], 1.0)
+            self.assertAlmostEqual(rare_row2['verified_one_to_one_f1_50um'], 0.0)
 
 
 if __name__ == '__main__':

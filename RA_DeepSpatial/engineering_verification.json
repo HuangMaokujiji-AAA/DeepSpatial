@@ -3,13 +3,15 @@
   "purpose": "engineering_validation_only_not_biological_performance",
   "tests": {
     "command": "python tests/test_pipeline.py",
-    "test_groups": 6,
+    "test_groups": 8,
     "status": "passed",
     "eight_arms_synthetic_end_to_end": true,
     "test_freeze_guard": true,
     "exact_cpu_epoch_resume_with_marker_and_anchor_rng": true,
     "global_blocked_uot_matches_POT": true,
-    "zero_marker_field_gradients_finite": true
+    "zero_marker_field_gradients_finite": true,
+    "official_subclass_sheet_and_digit_leading_symbols": true,
+    "training_import_and_CSV_read_with_ot_openpyxl_disabled": true
   },
   "real_dataset": {
     "sections": 66,
@@ -55,7 +57,34 @@
   "notebook_code_cells_compile": true,
   "formal_server_training_run": false,
   "GPU_24GB_peak_memory_measured": false,
-  "external_marker_table_present": false,
-  "actual_published_XLSX_headers_verified": false,
-  "remaining_user_action": "Download Yao2023 Supplementary Table 7, inspect headers, import to resources/markers.csv before formal eight-arm training."
+  "external_marker_table_present": true,
+  "actual_published_XLSX_headers_verified": true,
+  "remaining_user_action": "Upload resources/markers.csv to the same relative server path. XLSX conversion and POT-dependent engineering tests are completed locally; formal GPU training remains on server.",
+  "external_markers": {
+    "marker_sha256": "d216aef413d10e47bdd39609d3b2f3ea300e263274280fd6fe129507ade76d9f",
+    "external_panel_covered_types": 327,
+    "loss_covered_types": 327,
+    "heldout_C_covered_types": 145,
+    "rare_types": 319,
+    "rare_loss_covered_types": 310,
+    "rare_without_loss_markers": [
+      "234 MEV Ppp1r1c Glut",
+      "252 DMX VII Tbx20 Chol",
+      "262 Pineal Crx Glut",
+      "313 CBX Purkinje Gaba",
+      "323 Ependymal NN",
+      "324 Hypendymal NN",
+      "336 Monocytes NN",
+      "337 DC NN",
+      "338 Lymphoid NN"
+    ],
+    "validation_test_expression_read": false,
+    "source_sheet": "subclass_annotation",
+    "marker_columns": [
+      "subclass.markers.combo",
+      "subclass.tf.markers.combo"
+    ],
+    "records": 1892,
+    "external_subclasses": 338
+  }
 }

@@ -7,6 +7,7 @@ scipy>=1.10
 h5py>=3.8
 anndata>=0.10,<0.12
 torchdiffeq>=0.2.5
+# Needed only for local XLSX conversion and its test fixture; CSV-only training does not import it.
 openpyxl>=3.1
 # POT is used only for the engineering equivalence test of the UOT solver.
 POT>=0.9
